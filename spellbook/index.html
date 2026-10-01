@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free D&D 5e Loot Generator | Loot Table — Fantasy Portal</title>
-<meta name="description" content="Roll a complete D&amp;D 5th Edition treasure hoard scaled to your party's level: gold, trade goods, and magic items from the same rarity tiers as the core rules. Free, no sign-up, works entirely in your browser.">
-<link rel="canonical" href="https://fantasy-portal.com/loot-generator/">
+<title>D&D 5e Spell List &amp; Spellbook: All 370 Spells | Fantasy Portal</title>
+<meta name="description" content="Search all 370 core D&amp;D 5th Edition spells, cantrip to 9th level, filtered by class and spell level. Every entry has casting time, range, components, duration, and the full effect text. Free, no sign-up.">
+<link rel="canonical" href="https://fantasy-portal.com/spellbook/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Fantasy Portal">
-<meta property="og:title" content="Free D&D 5e Loot Generator | Loot Table">
-<meta property="og:description" content="Roll a full D&amp;D 5e treasure hoard scaled to your party's level, gold and magic items included. Free, no sign-up.">
-<meta property="og:url" content="https://fantasy-portal.com/loot-generator/">
+<meta property="og:title" content="D&D 5e Spell List: All 370 Core Spells | Spellbook">
+<meta property="og:description" content="Search all 370 core D&amp;D 5e spells by name, class, and level, with full casting details and effect text. Free, no sign-up.">
+<meta property="og:url" content="https://fantasy-portal.com/spellbook/">
 <meta property="og:image" content="https://fantasy-portal.com/og-image.png">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Free D&D 5e Loot Generator | Loot Table">
-<meta name="twitter:description" content="Roll a full D&amp;D 5e treasure hoard scaled to your party's level, gold and magic items included. Free, no sign-up.">
+<meta name="twitter:title" content="D&D 5e Spell List: All 370 Core Spells | Spellbook">
+<meta name="twitter:description" content="Search all 370 core D&amp;D 5e spells by name, class, and level, with full casting details and effect text. Free, no sign-up.">
 <meta name="twitter:image" content="https://fantasy-portal.com/og-image.png">
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='50,6 90,30 50,36 10,30' fill='%23B8863B' stroke='%232B2013' stroke-width='4'/%3E%3Cpolygon points='10,70 50,64 90,70 50,94' fill='%238a6329' stroke='%232B2013' stroke-width='4'/%3E%3Cpolygon points='10,30 50,36 90,30 90,70 50,64 10,70' fill='%23D9A653' stroke='%232B2013' stroke-width='4'/%3E%3C/svg%3E">
@@ -31,13 +31,21 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Loot Table",
-  "url": "https://fantasy-portal.com/loot-generator/",
-  "description": "A free D&D 5th Edition loot generator: rolls a treasure hoard, with gold and magic items, scaled to your party's level.",
+  "name": "Spellbook",
+  "url": "https://fantasy-portal.com/spellbook/",
+  "description": "A free searchable D&D 5th Edition spell list: all 370 core spells, filterable by class and spell level, with full spell text.",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Any (runs in browser)",
-  "isPartOf": { "@type": "WebSite", "name": "Fantasy Portal", "url": "https://fantasy-portal.com/" },
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Fantasy Portal",
+    "url": "https://fantasy-portal.com/"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
 }
 </script>
 
@@ -48,26 +56,26 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What decides how good the loot is?",
+      "name": "Can I filter by class and level at the same time?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Both the level you set and the hoard size affect the outcome. Level controls which rarity tiers are in play, and hoard size controls how much of everything you get."
+        "text": "Yes, both filters apply together, so you can narrow the list to, for example, only Wizard spells at 3rd level."
       }
     },
     {
       "@type": "Question",
-      "name": "Will I always get a magic item?",
+      "name": "Does it cover every class?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Not at very low levels, where a hoard might just be coin and mundane gear. From level 2 upward you'll typically see at least one magic item included."
+        "text": "Yes, all core 5th Edition spellcasting classes are included, along with every spell available to them."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I reroll just to see other results at the same settings?",
+      "name": "Is the spell text the same as the Player's Handbook?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, striking the seal again at the same level and hoard size gives you a fresh roll each time."
+        "text": "The entries are written to match the SRD rules rather than quoted directly from the book, so the mechanics are accurate while the wording is our own."
       }
     }
   ]
@@ -2610,7 +2618,7 @@
 
 <div class="app" id="lootView" hidden>
   <aside class="rail">
-    <h1 class="brand-eyebrow">Free D&amp;D 5e Loot Generator</h1>
+    <p class="brand-eyebrow">Loot Table</p>
     <h2 class="brand-title">The Hoard</h2>
     <p class="brand-sub">Set a party level and a hoard size. Strike the seal for gold and magic items, scaled to match.</p>
 
@@ -2687,7 +2695,6 @@
     <p><strong>What decides how good the loot is?</strong> Both the level you set and the hoard size affect the outcome. Level controls which rarity tiers are in play, and hoard size controls how much of everything you get.</p>
     <p><strong>Will I always get a magic item?</strong> Not at very low levels, where a hoard might just be coin and mundane gear. From level 2 upward you'll typically see at least one magic item included.</p>
     <p><strong>Can I reroll just to see other results at the same settings?</strong> Yes, striking the seal again at the same level and hoard size gives you a fresh roll each time.</p>
-    <p>Loot Table is one tool in <a href="https://fantasy-portal.com/">Fantasy Portal</a>, a free D&amp;D 5e toolkit that also includes Character Forge, Monster Forge, Encounters, a 370-spell Spellbook, a 137-creature Bestiary, an Initiative Tracker, and Dungeon Run, a permadeath roguelike.</p>
   </section>
 </div>
 
@@ -2771,7 +2778,7 @@
 
 <div class="app" id="spellbookView" hidden>
   <aside class="rail">
-    <p class="brand-eyebrow">Spellbook</p>
+    <h1 class="brand-eyebrow">D&amp;D 5e Spell List: All 370 Core Spells</h1>
     <h2 class="brand-title">The Grimoire</h2>
     <p class="brand-sub">Search for a spell by name, or browse the full list by level.</p>
 
@@ -2845,6 +2852,7 @@
     <p><strong>Can I filter by class and level at the same time?</strong> Yes, both filters apply together, so you can narrow the list to, for example, only Wizard spells at 3rd level.</p>
     <p><strong>Does it cover every class?</strong> Yes, all core 5th Edition spellcasting classes are included, along with every spell available to them.</p>
     <p><strong>Is the spell text the same as the Player's Handbook?</strong> The entries are written to match the SRD rules rather than quoted directly from the book, so the mechanics are accurate while the wording is our own.</p>
+    <p>Spellbook is one tool in <a href="https://fantasy-portal.com/">Fantasy Portal</a>, a free D&amp;D 5e toolkit that also includes Character Forge, Monster Forge, a Loot Table, Encounters, a 137-creature Bestiary, an Initiative Tracker, and Dungeon Run, a permadeath roguelike.</p>
   </section>
 </div>
 
@@ -3221,6 +3229,6 @@
 </div>
 
 <script src="/app.js"></script>
-<script>enterSite('loot');</script>
+<script>enterSite('spellbook');</script>
 </body>
 </html>

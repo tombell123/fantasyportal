@@ -508,6 +508,7 @@
     color: var(--cream-soft);
     padding: 10px 18px;
     cursor: pointer;
+    text-decoration: none;
     transition: color 0.15s ease, border-color 0.15s ease;
   }
   .tab-btn:hover{ color: var(--cream-text); }
@@ -2373,22 +2374,22 @@
       <span class="landing-card-name">Loot Table</span>
       <span class="landing-card-desc">Crack open a hoard scaled to your party.</span>
     </a>
-    <button type="button" class="landing-card" data-enter="spellbook">
+    <a class="landing-card" href="/spellbook/">
       <span class="landing-card-name">Spellbook</span>
       <span class="landing-card-desc">Search every spell, cantrip to 9th level.</span>
-    </button>
-    <button type="button" class="landing-card" data-enter="bestiary">
+    </a>
+    <a class="landing-card" href="/bestiary/">
       <span class="landing-card-name">Bestiary</span>
       <span class="landing-card-desc">Look up any creature’s full stat block by name.</span>
-    </button>
+    </a>
     <a class="landing-card" href="/encounter-generator/">
       <span class="landing-card-name">Encounters</span>
       <span class="landing-card-desc">Generate a balanced fight, with a hook if you want one.</span>
     </a>
-    <button type="button" class="landing-card" data-enter="tracker">
+    <a class="landing-card" href="/initiative-tracker/">
       <span class="landing-card-name">Initiative Tracker</span>
       <span class="landing-card-desc">Track turn order, HP, and conditions during combat.</span>
-    </button>
+    </a>
     <button type="button" class="landing-card" data-enter="myrolls">
       <span class="landing-card-name">My Rolls</span>
       <span class="landing-card-desc">Sign in to save characters, monsters, and loot.</span>
@@ -2424,12 +2425,12 @@
   <div class="tab-dropdown" id="referenceDropdown">
     <button type="button" class="tab-btn tab-dropdown-toggle" id="tabReference">Lore</button>
     <div class="tab-dropdown-menu">
-      <button type="button" class="tab-dropdown-item" id="tabSpellbook" data-tab="spellbook">Spellbook</button>
-      <button type="button" class="tab-dropdown-item" id="tabBestiary" data-tab="bestiary">Bestiary</button>
+      <a class="tab-dropdown-item" id="tabSpellbook" data-tab="spellbook" href="/spellbook/">Spellbook</a>
+      <a class="tab-dropdown-item" id="tabBestiary" data-tab="bestiary" href="/bestiary/">Bestiary</a>
     </div>
   </div>
-  <button type="button" class="tab-btn" id="tabTracker" data-tab="tracker">Initiative Tracker</button>
-  <button type="button" class="tab-btn" id="tabDungeon" data-tab="dungeon">Dungeon Run</button>
+  <a class="tab-btn" id="tabTracker" data-tab="tracker" href="/initiative-tracker/">Initiative Tracker</a>
+  <a class="tab-btn" id="tabDungeon" data-tab="dungeon" href="/dungeon-run/">Dungeon Run</a>
   <button type="button" class="tab-btn" id="tabMyRolls" data-tab="myrolls">My Rolls</button>
   <button type="button" class="tab-btn donate-tab" id="tabBlog" data-tab="blog">Blog</button>
   <button type="button" class="tab-btn" id="tabDonate" data-tab="donate">About Me</button>
