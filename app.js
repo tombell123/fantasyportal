@@ -11181,7 +11181,9 @@ function renderAccountPage(){
   document.getElementById('accountStatsGrid').innerHTML = '<p style="color:var(--ink-text-soft);">Loading your stats…</p>';
 
   const rollsPromise = fbDb.collection('users').doc(currentUser.uid).collection('savedRolls').get();
-  const runsPromise = fbDb.collection('users').doc(currentUser.uid).collection('dungeonRuns').get();
+  // Dungeon Run history is optional for the stats: if it can't be read, still show the roll counts.
+  const runsPromise = fbDb.collection('users').doc(currentUser.uid).collection('dungeonRuns').get()
+    .catch((e) => { console.error('Failed to load dungeon runs for stats', e); return null; });
 
   Promise.all([rollsPromise, runsPromise]).then(([rollsSnap, runsSnap]) => {
     const counts = { character: 0, monster: 0, loot: 0, encounter: 0 };
@@ -11190,8 +11192,9 @@ function renderAccountPage(){
       if(counts[d.type] !== undefined) counts[d.type]++;
     });
     let runsWon = 0;
-    runsSnap.forEach((doc) => { if(doc.data().status === 'won') runsWon++; });
-    const total = counts.character + counts.monster + counts.loot + counts.encounter + runsSnap.size;
+    if(runsSnap) runsSnap.forEach((doc) => { if(doc.data().status === 'won') runsWon++; });
+    const runsTotal = runsSnap ? runsSnap.size : 0;
+    const total = counts.character + counts.monster + counts.loot + counts.encounter + runsTotal;
 
     document.getElementById('accountTitleBadge').textContent = computeAccountTitle(total);
     document.getElementById('accountStatsGrid').innerHTML =
@@ -11199,8 +11202,8 @@ function renderAccountPage(){
       accountStatCard(counts.monster, 'Monsters') +
       accountStatCard(counts.loot, 'Loot Hauls') +
       accountStatCard(counts.encounter, 'Encounters') +
-      accountStatCard(runsSnap.size, 'Dungeon Runs') +
-      accountStatCard(runsWon, 'Runs Survived');
+      accountStatCard(runsSnap ? runsTotal : '–', 'Dungeon Runs') +
+      accountStatCard(runsSnap ? runsWon : '–', 'Runs Survived');
   }).catch((e) => {
     console.error('Failed to load account stats', e);
     document.getElementById('accountStatsGrid').innerHTML = '<p style="color:var(--ink-text-soft);">Couldn’t load your stats. Try again in a moment.</p>';
@@ -11302,7 +11305,13 @@ document.getElementById('journalEditorContainer').addEventListener('click', (e) 
     const savePromise = journalEditingId
       ? coll.doc(journalEditingId).update({ title, content, updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
       : coll.add({ title, content, createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    savePromise.then(() => { closeJournalEditor(); renderJournalList(); }).catch((e) => console.error('Failed to save journal entry', e));
+    const saveBtn = e.target;
+    saveBtn.textContent = 'Saving…';
+    savePromise.then(() => { closeJournalEditor(); renderJournalList(); }).catch((err) => {
+      console.error('Failed to save journal entry', err);
+      // Keep the editor open so nothing typed is lost, and say so.
+      saveBtn.textContent = 'Couldn’t save, try again';
+    });
     return;
   }
   if(e.target.id === 'journalDeleteBtn'){

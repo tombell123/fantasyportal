@@ -185,10 +185,10 @@
   .account-accent-swatch{ width:28px; height:28px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; }
   .account-accent-swatch.active{ border-color: var(--cream-text); }
   .account-stats-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:12px; margin-bottom:24px; }
-  .account-stat-card{ background: rgba(184,134,59,0.06); border:1px solid var(--rule); border-radius:10px; padding:14px; text-align:center; }
-  .account-stat-num{ font-size:26px; font-weight:600; color: var(--brass-bright); line-height:1.1; }
+  /* Stat cards sit on the parchment sheet in both themes, so use fixed ink/brass colours. */
+  .account-stat-card{ background: rgba(140,95,38,0.06); border:1px solid rgba(140,95,38,0.35); border-radius:10px; padding:14px; text-align:center; }
+  .account-stat-num{ font-size:26px; font-weight:600; color: #8C5F26; line-height:1.1; }
   .account-stat-label{ font-size:12px; color: var(--ink-text-soft); margin-top:4px; }
-  html:not([data-theme="light"]) .account-stat-label{ color: var(--cream-soft); }
   .journal-entry{ background: rgba(184,134,59,0.05); border:1px solid var(--rule); border-radius:8px; padding:12px 14px; margin-bottom:10px; cursor:pointer; }
   .journal-entry-title{ font-weight:600; margin:0 0 4px; }
   .journal-entry-meta{ font-size:12px; color: var(--ink-text-soft); }
@@ -1194,6 +1194,11 @@
   }
   .toolbar-btn:hover{ background: rgba(184,134,59,0.18); border-color: var(--brass-bright); }
   .toolbar-btn:focus-visible{ outline: 2px solid var(--cream-text); outline-offset: 2px; }
+  /* Toolbar buttons placed inside a parchment card (e.g. the Journal)
+     need dark ink text in both themes. */
+  .sheet .toolbar-btn{ background: rgba(43,32,19,0.04); border-color: rgba(140,95,38,0.4); color: var(--ink-text); }
+  .sheet .toolbar-btn:hover{ background: rgba(140,95,38,0.14); border-color: var(--brass); }
+  .sheet .toolbar-btn:focus-visible{ outline-color: var(--ink-text); }
 
   .dungeon-action-grid{
     display: grid;
@@ -2264,6 +2269,10 @@
   }
   .modal-action-btn:hover{ background: rgba(43,32,19,0.14); border-color: rgba(43,32,19,0.4); }
   .modal-action-btn:focus-visible{ outline: 2px solid var(--ink-text); outline-offset: 2px; }
+  /* The cookie banner sits on the dark page background, not a parchment
+     modal, so its secondary button needs the page's text colour. */
+  .cookie-banner .modal-action-btn:not(.cookie-accept-btn){ background: transparent; border-color: rgba(184,134,59,0.4); color: var(--cream-text); }
+  .cookie-banner .modal-action-btn:not(.cookie-accept-btn):hover{ background: rgba(184,134,59,0.18); border-color: var(--brass-bright); }
   .modal-close:hover{ background: rgba(43,32,19,0.14); }
   .modal-title{
     font-family:'Cinzel Decorative', serif;
