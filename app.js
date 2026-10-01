@@ -5329,9 +5329,9 @@ function cantripsKnown(base, level){
   return n;
 }
 
-function assignAbilityScores(cls){
+function assignAbilityScores(cls, order){
   const array = [15,14,13,12,10,8];
-  const order = cls.primary.slice();
+  order = (order || cls.primary).slice();
   const scores = {};
   order.forEach((a,i)=>{ scores[a] = array[i]; });
   return scores;
@@ -5369,10 +5369,10 @@ function asiLevelsForClass(clsName){
 const FEAT_CHANCE_BEFORE_MAX = 0.15;
 const FEAT_CHANCE_AFTER_MAX = 0.6;
 
-function applyAbilityScoreImprovements(scores, cls, asiCount){
+function applyAbilityScoreImprovements(scores, cls, asiCount, order){
   let out = Object.assign({}, scores);
   const feats = [];
-  const order = cls.primary;
+  order = order || cls.primary;
 
   for(let i = 0; i < asiCount; i++){
     const featChance = out[order[0]] >= 20 ? FEAT_CHANCE_AFTER_MAX : FEAT_CHANCE_BEFORE_MAX;
@@ -5494,6 +5494,76 @@ function spreadSpellCounts(count, weights, pool){
   return counts;
 }
 
+// Eldritch Knight (Fighter) and Arcane Trickster (Rogue) cast wizard spells
+// from 3rd level, mostly from two schools. 2014 PHB tables.
+const THIRD_CASTER_SUBCLASSES = {
+  'Eldritch Knight':  { schools:['Abjuration','Evocation'], cantripBase:2, mandatoryCantrip:null,
+                        // EKs keep INT behind STR and CON rather than dumping it.
+                        primary:['str','con','int','dex','wis','cha'] },
+  'Arcane Trickster': { schools:['Enchantment','Illusion'], cantripBase:3, mandatoryCantrip:'Mage Hand',
+                        primary:null },
+};
+const THIRD_CASTER_KNOWN = [0,0,0,3,4,4,4,5,6,6,7,8,8,9,10,10,11,11,11,12,13];
+const THIRD_CASTER_SLOTS = {
+  3:[2],4:[3],5:[3],6:[3],7:[4,2],8:[4,2],9:[4,2],10:[4,3],11:[4,3],12:[4,3],
+  13:[4,3,2],14:[4,3,2],15:[4,3,2],16:[4,3,3],17:[4,3,3],18:[4,3,3],19:[4,3,3,1],20:[4,3,3,1],
+};
+// At these class levels the new spell can come from any school.
+const THIRD_CASTER_FREE_PICK_LEVELS = [3, 8, 14, 20];
+
+function buildThirdCasterSpellBlock(subclassName, classLevel, scores, prof){
+  const sub = THIRD_CASTER_SUBCLASSES[subclassName];
+  if(!sub || classLevel < 3) return null;
+  const wiz = SPELL_DB.Wizard;
+  const lvl = Math.min(classLevel, 20);
+  const slots = THIRD_CASTER_SLOTS[lvl];
+  const maxLvl = slots.length;
+  const abilityMod = mod(scores.int);
+  const schoolOf = name => (SPELL_DESC_LOOKUP[name] || {}).school;
+
+  // Cantrips: any wizard cantrip; Arcane Tricksters always know Mage Hand.
+  const cantripCount = sub.cantripBase + (lvl >= 10 ? 1 : 0);
+  const others = wiz.cantrips.map(sp => sp.name).filter(n => n !== sub.mandatoryCantrip);
+  const cantrips = (sub.mandatoryCantrip ? [sub.mandatoryCantrip] : [])
+    .concat(pickN(others, cantripCount - (sub.mandatoryCantrip ? 1 : 0)));
+
+  // Free picks: one per free-pick level reached, at the highest spell level
+  // available then (what most players take).
+  const freePicks = THIRD_CASTER_FREE_PICK_LEVELS.filter(l => lvl >= l)
+    .map(l => THIRD_CASTER_SLOTS[l].length);
+  const restrictedCount = THIRD_CASTER_KNOWN[lvl] - freePicks.length;
+
+  const restrictedPool = {};
+  for(let l = 1; l <= maxLvl; l++){
+    restrictedPool[l] = (wiz[l] || []).filter(sp => sub.schools.includes(schoolOf(sp.name)));
+  }
+  const counts = spreadSpellCounts(restrictedCount, slots, restrictedPool);
+  let known = [];
+  Object.keys(counts).map(Number).forEach(l => {
+    known = known.concat(pickN(restrictedPool[l].map(sp => sp.name), counts[l]));
+  });
+  freePicks.forEach(l => {
+    const choices = (wiz[l] || []).map(sp => sp.name)
+      .filter(n => !known.includes(n) && !sub.schools.includes(schoolOf(n)));
+    if(choices.length) known.push(pick(choices));
+  });
+  const levelOf = {};
+  for(let l = 1; l <= 9; l++) (wiz[l] || []).forEach(sp => { levelOf[sp.name] = l; });
+  known.sort((a, b) => levelOf[a] - levelOf[b]);
+
+  return {
+    ability: 'int',
+    saveDC: 8 + prof + abilityMod,
+    attackBonus: prof + abilityMod,
+    maxSpellLevel: maxLvl,
+    cantrips,
+    known,
+    arcanum: [],
+    list: 'Wizard',
+    label: subclassName + ' Spellcasting',
+  };
+}
+
 // Multiclassed characters learn and prepare spells for each class as if
 // single-classed at that class's own level (PHB p.164), so classLevel is
 // always the class's own level here.
@@ -5538,7 +5608,11 @@ async function generateCharacter(level, locks, multiclassCls){
   const bg = locks.bg || drawFromBag('bg', BACKGROUNDS);
   const alignment = locks.alignment || drawFromBag('alignment', ALIGNMENTS);
 
-  let scores = assignAbilityScores(cls);
+  // Subclass is planned up front because Eldritch Knights want a usable INT.
+  // (It's dropped later if multiclassing leaves too few levels for one.)
+  const plannedSubclass = level >= cls.subclassLevel ? pick(cls.subclasses) : null;
+  const statOrder = (THIRD_CASTER_SUBCLASSES[plannedSubclass] || {}).primary || null;
+  let scores = assignAbilityScores(cls, statOrder);
   scores = applyRacialBonuses(scores, race);
 
   // Multiclassing: only offered at level 3+ so both classes get at least
@@ -5568,7 +5642,7 @@ async function generateCharacter(level, locks, multiclassCls){
   // Fighter's 4 and 6 plus Wizard's 4).
   const asiCount = asiLevelsForClass(cls.name).filter(l => l <= level1).length +
     (cls2 ? asiLevelsForClass(cls2.name).filter(l => l <= level2).length : 0);
-  const asiResult = applyAbilityScoreImprovements(scores, cls, asiCount);
+  const asiResult = applyAbilityScoreImprovements(scores, cls, asiCount, statOrder);
   scores = asiResult.scores;
   const feats = asiResult.feats;
 
@@ -5604,11 +5678,13 @@ async function generateCharacter(level, locks, multiclassCls){
   // Spellcasting: each class's spells are worked out at its own class level
   // (PHB multiclass rules: you learn and prepare spells for each class as if
   // single-classed; only the shared slot pool uses the combined level).
-  const spellBlock = buildSpellBlockForClass(cls, level1, scores, prof);
-  const spellBlock2 = cls2 ? buildSpellBlockForClass(cls2, level2, scores, prof) : null;
-
-  const subclass = level1 >= cls.subclassLevel ? pick(cls.subclasses) : null;
+  const subclass = level1 >= cls.subclassLevel ? plannedSubclass : null;
   const subclass2 = cls2 && level2 >= cls2.subclassLevel ? pick(cls2.subclasses) : null;
+  const spellBlock = buildSpellBlockForClass(cls, level1, scores, prof) ||
+    buildThirdCasterSpellBlock(subclass, level1, scores, prof);
+  const spellBlock2 = cls2 ? (buildSpellBlockForClass(cls2, level2, scores, prof) ||
+    buildThirdCasterSpellBlock(subclass2, level2, scores, prof)) : null;
+
   const ac = computeArmorClass(scores, cls, gear);
 
   return {
@@ -7392,13 +7468,13 @@ function classFeaturesSection(c){
 
 function spellSection(sb, cls, showClassName){
   if(!sb) return '';
-  const title = showClassName ? (cls.name+' Spellcasting') : 'Spellcasting';
+  const title = sb.label || (showClassName ? (cls.name+' Spellcasting') : 'Spellcasting');
   let html = '<div class="section"><h3 class="section-title">'+title+'</h3>';
   html += '<div class="spell-meta">Ability <b>'+ABIL_NAMES[sb.ability]+'</b> &nbsp;·&nbsp; Save DC <b>'+sb.saveDC+'</b> &nbsp;·&nbsp; Attack <b>'+fmtMod(sb.attackBonus)+'</b> &nbsp;·&nbsp; Max spell level <b>'+sb.maxSpellLevel+'</b></div>';
   if(sb.cantrips.length){
     html += '<div class="spell-group-label">Cantrips</div><div class="tag-row">'+sb.cantrips.map(spellTagBtn).join('')+'</div>';
   }
-  groupSpellsByLevel(cls.name, sb.known).forEach(([lvl, names]) => {
+  groupSpellsByLevel(sb.list || cls.name, sb.known).forEach(([lvl, names]) => {
     html += '<div class="spell-group-label">'+(lvl ? ordinal(lvl)+' level' : 'Spells')+'</div><div class="tag-row">'+names.map(spellTagBtn).join('')+'</div>';
   });
   if(sb.arcanum && sb.arcanum.length){
@@ -7858,7 +7934,7 @@ function characterToText(c){
     lines.push('SPELLCASTING');
     lines.push('Ability '+ABIL_NAMES[c.spellBlock.ability]+'   Save DC '+c.spellBlock.saveDC+'   Attack '+fmtMod(c.spellBlock.attackBonus)+'   Max Spell Level '+c.spellBlock.maxSpellLevel);
     if(c.spellBlock.cantrips.length) lines.push('Cantrips: '+c.spellBlock.cantrips.join(', '));
-    groupSpellsByLevel(c.cls.name, c.spellBlock.known).forEach(([lvl, names]) => {
+    groupSpellsByLevel(c.spellBlock.list || c.cls.name, c.spellBlock.known).forEach(([lvl, names]) => {
       lines.push((lvl ? ordinal(lvl)+' level' : 'Spells')+': '+names.join(', '));
     });
     if(c.spellBlock.arcanum && c.spellBlock.arcanum.length) lines.push('Mystic Arcanum: '+c.spellBlock.arcanum.join(', '));
@@ -8184,6 +8260,7 @@ function characterToSharePayload(c){
       ability: c.spellBlock.ability, saveDC: c.spellBlock.saveDC,
       attackBonus: c.spellBlock.attackBonus, maxSpellLevel: c.spellBlock.maxSpellLevel,
       cantrips: c.spellBlock.cantrips, known: c.spellBlock.known, arcanum: c.spellBlock.arcanum || [],
+      list: c.spellBlock.list || null, label: c.spellBlock.label || null,
     } : null,
     hook: c.hook, gold: c.gold, notes: c.notes || '',
     gear: c.gear.map(g => ({ n: g.n || null, name:g.name, isMagic: g.isMagic || false, kind: g.kind || null, rarity: g.rarity || null })),
@@ -8193,6 +8270,7 @@ function characterToSharePayload(c){
         ability: mc.spellBlock2.ability, saveDC: mc.spellBlock2.saveDC,
         attackBonus: mc.spellBlock2.attackBonus, maxSpellLevel: mc.spellBlock2.maxSpellLevel,
         cantrips: mc.spellBlock2.cantrips, known: mc.spellBlock2.known, arcanum: mc.spellBlock2.arcanum || [],
+        list: mc.spellBlock2.list || null, label: mc.spellBlock2.label || null,
       } : null,
     } : null,
   };
