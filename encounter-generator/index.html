@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free D&D 5e Monster Generator | Monster Forge — Fantasy Portal</title>
-<meta name="description" content="Generate a complete D&amp;D 5th Edition monster stat block by challenge rating: AC, HP, speed, abilities, saving throws, skills, traits, and actions for any of 137 creatures, from a rat to the Tarrasque. Free, no sign-up, works entirely in your browser.">
-<link rel="canonical" href="https://fantasy-portal.com/monster-generator/">
+<title>Free D&D 5e Encounter Generator | Encounters — Fantasy Portal</title>
+<meta name="description" content="Build a balanced D&amp;D 5th Edition combat encounter for your party's size and level, using the Dungeon Master's Guide XP thresholds and multipliers, with an optional story hook. Free, no sign-up, works entirely in your browser.">
+<link rel="canonical" href="https://fantasy-portal.com/encounter-generator/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Fantasy Portal">
-<meta property="og:title" content="Free D&D 5e Monster Generator | Monster Forge">
-<meta property="og:description" content="Generate a full D&amp;D 5e monster stat block by challenge rating, from a rat to the Tarrasque, with actions and all. Free, no sign-up.">
-<meta property="og:url" content="https://fantasy-portal.com/monster-generator/">
+<meta property="og:title" content="Free D&D 5e Encounter Generator | Encounters">
+<meta property="og:description" content="Build a balanced D&amp;D 5e combat encounter for your party's size and level, with an optional story hook. Free, no sign-up.">
+<meta property="og:url" content="https://fantasy-portal.com/encounter-generator/">
 <meta property="og:image" content="https://fantasy-portal.com/og-image.png">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Free D&D 5e Monster Generator | Monster Forge">
-<meta name="twitter:description" content="Generate a full D&amp;D 5e monster stat block by challenge rating, from a rat to the Tarrasque, with actions and all. Free, no sign-up.">
+<meta name="twitter:title" content="Free D&D 5e Encounter Generator | Encounters">
+<meta name="twitter:description" content="Build a balanced D&amp;D 5e combat encounter for your party's size and level, with an optional story hook. Free, no sign-up.">
 <meta name="twitter:image" content="https://fantasy-portal.com/og-image.png">
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='50,6 90,30 50,36 10,30' fill='%23B8863B' stroke='%232B2013' stroke-width='4'/%3E%3Cpolygon points='10,70 50,64 90,70 50,94' fill='%238a6329' stroke='%232B2013' stroke-width='4'/%3E%3Cpolygon points='10,30 50,36 90,30 90,70 50,64 10,70' fill='%23D9A653' stroke='%232B2013' stroke-width='4'/%3E%3C/svg%3E">
@@ -31,13 +31,21 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Monster Forge",
-  "url": "https://fantasy-portal.com/monster-generator/",
-  "description": "A free D&D 5th Edition monster generator: rolls a complete stat block for any of 137 creatures by challenge rating.",
+  "name": "Encounters",
+  "url": "https://fantasy-portal.com/encounter-generator/",
+  "description": "A free D&D 5th Edition encounter generator: builds a balanced fight for your party's size and level using the DMG encounter-building rules.",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Any (runs in browser)",
-  "isPartOf": { "@type": "WebSite", "name": "Fantasy Portal", "url": "https://fantasy-portal.com/" },
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Fantasy Portal",
+    "url": "https://fantasy-portal.com/"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
 }
 </script>
 
@@ -48,26 +56,26 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "How are the threat tiers grouped?",
+      "name": "How accurate is the difficulty rating?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Monsters are split into five tiers by challenge rating, so you can roll something that actually fits the encounter rather than getting a random spread across every difficulty."
+        "text": "It follows the same XP threshold math the Dungeon Master's Guide uses, so an encounter marked hard should genuinely play out as a hard fight for that party."
       }
     },
     {
       "@type": "Question",
-      "name": "Can I see a monster's full stat block, not just a summary?",
+      "name": "Can I get just monsters, without the flavor text?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Every roll gives you the complete block, including all of its actions, not a shortened version."
+        "text": "Yes, the stat blocks only option skips the hook and gives you the encounter on its own."
       }
     },
     {
       "@type": "Question",
-      "name": "Is this useful outside of combat?",
+      "name": "Can I send the result straight into combat?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "It works well for quickly reading a creature's traits and lore hooks too, not just its numbers, if you want a monster for a scene rather than a fight."
+        "text": "Yes, use the Send to Tracker button on a rolled encounter to load every monster into the Initiative Tracker, initiative already rolled."
       }
     }
   ]
@@ -2533,7 +2541,7 @@
 
 <div class="app" id="monsterView" hidden>
   <aside class="rail">
-    <h1 class="brand-eyebrow">Free D&amp;D 5e Monster Generator</h1>
+    <p class="brand-eyebrow">Monster Forge</p>
     <h2 class="brand-title">The Bestiary</h2>
     <p class="brand-sub">Pick a threat tier. Strike the seal. Full stat block, actions and all.</p>
 
@@ -2604,7 +2612,6 @@
     <p><strong>How are the threat tiers grouped?</strong> Monsters are split into five tiers by challenge rating, so you can roll something that actually fits the encounter rather than getting a random spread across every difficulty.</p>
     <p><strong>Can I see a monster's full stat block, not just a summary?</strong> Yes. Every roll gives you the complete block, including all of its actions, not a shortened version.</p>
     <p><strong>Is this useful outside of combat?</strong> It works well for quickly reading a creature's traits and lore hooks too, not just its numbers, if you want a monster for a scene rather than a fight.</p>
-    <p>Monster Forge is one tool in <a href="https://fantasy-portal.com/">Fantasy Portal</a>, a free D&amp;D 5e toolkit that also includes Character Forge, a Loot Table, Encounters, a 370-spell Spellbook, a 137-creature Bestiary, an Initiative Tracker, and Dungeon Run, a permadeath roguelike.</p>
   </section>
 </div>
 
@@ -2692,7 +2699,7 @@
 
 <div class="app" id="encountersView" hidden>
   <aside class="rail">
-    <p class="brand-eyebrow">Encounters</p>
+    <h1 class="brand-eyebrow">Free D&amp;D 5e Encounter Generator</h1>
     <h2 class="brand-title">The Ambush</h2>
     <p class="brand-sub">Set your party's size, level, and how rough you want it, then strike the seal.</p>
 
@@ -2765,6 +2772,7 @@
     <p><strong>How accurate is the difficulty rating?</strong> It follows the same XP threshold math the Dungeon Master's Guide uses, so an encounter marked hard should genuinely play out as a hard fight for that party.</p>
     <p><strong>Can I get just monsters, without the flavor text?</strong> Yes, the stat blocks only option skips the hook and gives you the encounter on its own.</p>
     <p><strong>Can I send the result straight into combat?</strong> Yes, use the Send to Tracker button on a rolled encounter to load every monster into the Initiative Tracker, initiative already rolled.</p>
+    <p>Encounters is one tool in <a href="https://fantasy-portal.com/">Fantasy Portal</a>, a free D&amp;D 5e toolkit that also includes Character Forge, Monster Forge, a Loot Table, a 370-spell Spellbook, a 137-creature Bestiary, an Initiative Tracker, and Dungeon Run, a permadeath roguelike.</p>
   </section>
 </div>
 
@@ -3220,6 +3228,6 @@
 </div>
 
 <script src="/app.js"></script>
-<script>enterSite('monster');</script>
+<script>enterSite('encounters');</script>
 </body>
 </html>
