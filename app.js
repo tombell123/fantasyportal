@@ -5364,16 +5364,19 @@ function asiLevelsForClass(clsName){
 // arbitrary. Iterates level-by-level so prerequisites are checked against
 // the character's scores as they stood at that level, not their eventual
 // final scores.
-const FEAT_CHANCE = 0.45;
+// Most players push their main stat to 20 before spending ASIs on feats,
+// so feats are uncommon until it's maxed and common afterwards.
+const FEAT_CHANCE_BEFORE_MAX = 0.15;
+const FEAT_CHANCE_AFTER_MAX = 0.6;
 
-function applyAbilityScoreImprovements(scores, cls, level){
+function applyAbilityScoreImprovements(scores, cls, asiCount){
   let out = Object.assign({}, scores);
   const feats = [];
-  const asiLevels = asiLevelsForClass(cls.name).filter(l => l <= level);
   const order = cls.primary;
 
-  asiLevels.forEach(() => {
-    const tryFeat = Math.random() < FEAT_CHANCE;
+  for(let i = 0; i < asiCount; i++){
+    const featChance = out[order[0]] >= 20 ? FEAT_CHANCE_AFTER_MAX : FEAT_CHANCE_BEFORE_MAX;
+    const tryFeat = Math.random() < featChance;
     const eligible = tryFeat ? Object.keys(FEAT_REGISTRY).filter(name => {
       if(feats.includes(name)) return false;
       const f = FEAT_REGISTRY[name];
@@ -5385,7 +5388,7 @@ function applyAbilityScoreImprovements(scores, cls, level){
       feats.push(chosen);
       if(chosen === 'Actor') out.cha = Math.min(20, out.cha + 1);
       else if(chosen === 'Resilient') out[order[0]] = Math.min(20, out[order[0]] + 1);
-      return;
+      continue;
     }
 
     let points = 2;
@@ -5396,7 +5399,7 @@ function applyAbilityScoreImprovements(scores, cls, level){
       out[stat] += 1;
       points -= 1;
     }
-  });
+  }
 
   return { scores: out, feats };
 }
@@ -5426,45 +5429,106 @@ function applyMagicItemStatBonuses(scores, gear){
 
 const MULTICLASS_SKILL_COUNT = { Bard:1, Ranger:1, Rogue:1 };
 
-function buildSpellBlockForClass(cls, classLevel, scores, prof, casterLevelOverride){
+// 2014 PHB "Spells Known" columns, indexed by class level (index 0 unused).
+// Classes not listed here prepare spells instead (see spellCountFor).
+const SPELLS_KNOWN_TABLE = {
+  Bard:     [0,4,5,6,7,8,9,10,11,12,14,15,15,16,18,19,19,20,22,22,22],
+  Sorcerer: [0,2,3,4,5,6,7,8,9,10,11,12,12,13,13,14,14,15,15,15,15],
+  Warlock:  [0,2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15],
+  Ranger:   [0,0,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11],
+};
+
+// Warlock Pact Magic: all slots are one level, which tops out at 5th.
+function warlockSlotLevel(level){
+  if(level>=9) return 5;
+  if(level>=7) return 4;
+  if(level>=5) return 3;
+  if(level>=3) return 2;
+  return 1;
+}
+// Mystic Arcanum: one 6th/7th/8th/9th level spell at Warlock 11/13/15/17.
+function warlockArcanumLevels(level){
+  return [11,13,15,17].filter(l => level >= l).map((l, i) => 6 + i);
+}
+
+// How many leveled spells the class knows (or has prepared) at this class level.
+function spellCountFor(cls, classLevel, abilityMod){
+  if(SPELLS_KNOWN_TABLE[cls.name]) return SPELLS_KNOWN_TABLE[cls.name][Math.min(classLevel, 20)];
+  if(cls.name === 'Paladin') return Math.max(1, abilityMod + Math.floor(classLevel / 2));
+  return Math.max(1, abilityMod + classLevel); // Cleric, Druid, Wizard
+}
+
+// Slots per spell level for this class at this class level, used to weight
+// how many spells of each level a character carries. Half casters use the
+// full-caster row at half their level (rounded up), which matches the PHB.
+function slotWeightsFor(cls, classLevel, maxLvl){
+  if(cls.caster === 'pact') return Array.from({ length: maxLvl }, () => 1);
+  const row = cls.caster === 'half'
+    ? (classLevel < 2 ? [] : FULL_CASTER_SLOTS_BY_LEVEL[Math.ceil(classLevel / 2)])
+    : FULL_CASTER_SLOTS_BY_LEVEL[Math.min(classLevel, 20)];
+  return (row || []).slice(0, maxLvl);
+}
+
+// Splits `count` spells across spell levels 1..maxLvl. Every level the
+// character can cast gets at least one spell (highest first, so a level 20
+// wizard always has a 9th-level spell), and the rest are spread in
+// proportion to spell slots, which is roughly how real players build a list.
+function spreadSpellCounts(count, weights, pool){
+  const levels = weights.map((w, i) => i + 1).filter(l => (pool[l] || []).length);
+  const counts = {};
+  levels.forEach(l => counts[l] = 0);
+  let left = count;
+  for(const l of levels.slice().reverse()){
+    if(left <= 0) break;
+    counts[l]++; left--;
+  }
+  while(left > 0){
+    const open = levels.filter(l => counts[l] < pool[l].length);
+    if(!open.length) break;
+    const total = open.reduce((t, l) => t + weights[l - 1], 0);
+    let r = Math.random() * total;
+    let chosen = open[open.length - 1];
+    for(const l of open){ r -= weights[l - 1]; if(r < 0){ chosen = l; break; } }
+    counts[chosen]++; left--;
+  }
+  return counts;
+}
+
+// Multiclassed characters learn and prepare spells for each class as if
+// single-classed at that class's own level (PHB p.164), so classLevel is
+// always the class's own level here.
+function buildSpellBlockForClass(cls, classLevel, scores, prof){
   if(cls.caster === 'none' || classLevel < 1) return null;
   const pool = SPELL_DB[cls.name] || { cantrips:[] };
   const abilityMod = mod(scores[cls.spellAbility]);
-  const effLevel = casterLevelOverride != null ? casterLevelOverride : classLevel;
   let maxLvl;
-  if(cls.caster==='half') maxLvl = maxSpellLevelHalf(effLevel);
-  else maxLvl = maxSpellLevelFull(effLevel);
+  if(cls.caster === 'half') maxLvl = maxSpellLevelHalf(classLevel);
+  else if(cls.caster === 'pact') maxLvl = warlockSlotLevel(classLevel);
+  else maxLvl = maxSpellLevelFull(classLevel);
+  if(maxLvl <= 0) return null;
 
   const cantripNames = pool.cantrips.map(s=>s.name);
   const cantrips = cls.cantripBase ? pickN(cantripNames, cantripsKnown(cls.cantripBase, classLevel)) : [];
 
-  let leveledPool = [];
-  for(let l=1;l<=maxLvl;l++){ if(pool[l]) leveledPool = leveledPool.concat(pool[l].map(s=>s.name)); }
+  const counts = spreadSpellCounts(spellCountFor(cls, classLevel, abilityMod), slotWeightsFor(cls, classLevel, maxLvl), pool);
+  let known = [];
+  Object.keys(counts).map(Number).sort((a, b) => a - b).forEach(l => {
+    known = known.concat(pickN(pool[l].map(sp => sp.name), counts[l]));
+  });
 
-  let countKnown;
-  if(cls.caster==='prepared'){
-    countKnown = Math.max(1, abilityMod + classLevel);
-  } else {
-    countKnown = Math.max(1, classLevel + 1);
-  }
-  countKnown = Math.min(countKnown, leveledPool.length, 12);
-  const known = pickN(leveledPool, countKnown);
+  const arcanum = cls.caster === 'pact'
+    ? warlockArcanumLevels(classLevel).filter(l => (pool[l] || []).length).map(l => pick(pool[l]).name)
+    : [];
 
-  if(maxLvl<=0) return null;
   return {
     ability: cls.spellAbility,
     saveDC: 8 + prof + abilityMod,
     attackBonus: prof + abilityMod,
     maxSpellLevel: maxLvl,
     cantrips,
-    known
+    known,
+    arcanum,
   };
-}
-
-function casterWeight(cls){
-  if(cls.caster==='known' || cls.caster==='prepared') return 1;
-  if(cls.caster==='half') return 0.5;
-  return 0;
 }
 
 async function generateCharacter(level, locks, multiclassCls){
@@ -5500,7 +5564,11 @@ async function generateCharacter(level, locks, multiclassCls){
     }
   }
 
-  const asiResult = applyAbilityScoreImprovements(scores, cls, level);
+  // ASIs come from each class's own levels (a Fighter 6 / Wizard 4 gets
+  // Fighter's 4 and 6 plus Wizard's 4).
+  const asiCount = asiLevelsForClass(cls.name).filter(l => l <= level1).length +
+    (cls2 ? asiLevelsForClass(cls2.name).filter(l => l <= level2).length : 0);
+  const asiResult = applyAbilityScoreImprovements(scores, cls, asiCount);
   scores = asiResult.scores;
   const feats = asiResult.feats;
 
@@ -5533,16 +5601,11 @@ async function generateCharacter(level, locks, multiclassCls){
   const nameSet = NAME_PARTS[race.nameGroup || race.name];
   const name = drawFromBag('name-first:'+race.name, nameSet.first) + ' ' + drawFromBag('name-last:'+race.name, nameSet.last);
 
-  // Spellcasting: each class's known/prepared spells are worked out using
-  // its own individual level, but how far up the spell list either class
-  // can reach is based on their *combined* multiclass caster level (2014
-  // PHB multiclass spellcaster rules: full casters count all their levels,
-  // half casters count half, rounded down).
-  const combinedCasterLevel = cls2
-    ? Math.floor(level1 * casterWeight(cls) + level2 * casterWeight(cls2))
-    : null;
-  const spellBlock = buildSpellBlockForClass(cls, level1, scores, prof, cls2 ? combinedCasterLevel : null);
-  const spellBlock2 = cls2 ? buildSpellBlockForClass(cls2, level2, scores, prof, combinedCasterLevel) : null;
+  // Spellcasting: each class's spells are worked out at its own class level
+  // (PHB multiclass rules: you learn and prepare spells for each class as if
+  // single-classed; only the shared slot pool uses the combined level).
+  const spellBlock = buildSpellBlockForClass(cls, level1, scores, prof);
+  const spellBlock2 = cls2 ? buildSpellBlockForClass(cls2, level2, scores, prof) : null;
 
   const subclass = level1 >= cls.subclassLevel ? pick(cls.subclasses) : null;
   const subclass2 = cls2 && level2 >= cls2.subclassLevel ? pick(cls2.subclasses) : null;
@@ -7335,12 +7398,27 @@ function spellSection(sb, cls, showClassName){
   if(sb.cantrips.length){
     html += '<div class="spell-group-label">Cantrips</div><div class="tag-row">'+sb.cantrips.map(spellTagBtn).join('')+'</div>';
   }
-  if(sb.known.length){
-    html += '<div class="spell-group-label">Spells</div><div class="tag-row">'+sb.known.map(spellTagBtn).join('')+'</div>';
+  groupSpellsByLevel(cls.name, sb.known).forEach(([lvl, names]) => {
+    html += '<div class="spell-group-label">'+(lvl ? ordinal(lvl)+' level' : 'Spells')+'</div><div class="tag-row">'+names.map(spellTagBtn).join('')+'</div>';
+  });
+  if(sb.arcanum && sb.arcanum.length){
+    html += '<div class="spell-group-label">Mystic Arcanum (once per long rest)</div><div class="tag-row">'+sb.arcanum.map(spellTagBtn).join('')+'</div>';
   }
   html += '</div>';
   return html;
 }
+
+// [[level, [names...]], ...] in level order, using the class's own spell list.
+// Spells not found on that list (older saved rolls) land in a level-0 group.
+function groupSpellsByLevel(clsName, names){
+  const pool = SPELL_DB[clsName] || {};
+  const levelOf = {};
+  Object.keys(pool).forEach(k => { if(k !== 'cantrips') pool[k].forEach(sp => { levelOf[sp.name] = +k; }); });
+  const groups = {};
+  names.forEach(n => { const l = levelOf[n] || 0; (groups[l] = groups[l] || []).push(n); });
+  return Object.keys(groups).map(Number).sort((a, b) => a - b).map(l => [l, groups[l]]);
+}
+function ordinal(n){ return n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'); }
 
 function gearItemBtn(g){
   const label = (g.n && g.n>1 ? g.n+'\u00d7 ' : '') + g.name;
@@ -7780,7 +7858,10 @@ function characterToText(c){
     lines.push('SPELLCASTING');
     lines.push('Ability '+ABIL_NAMES[c.spellBlock.ability]+'   Save DC '+c.spellBlock.saveDC+'   Attack '+fmtMod(c.spellBlock.attackBonus)+'   Max Spell Level '+c.spellBlock.maxSpellLevel);
     if(c.spellBlock.cantrips.length) lines.push('Cantrips: '+c.spellBlock.cantrips.join(', '));
-    if(c.spellBlock.known.length) lines.push('Spells: '+c.spellBlock.known.join(', '));
+    groupSpellsByLevel(c.cls.name, c.spellBlock.known).forEach(([lvl, names]) => {
+      lines.push((lvl ? ordinal(lvl)+' level' : 'Spells')+': '+names.join(', '));
+    });
+    if(c.spellBlock.arcanum && c.spellBlock.arcanum.length) lines.push('Mystic Arcanum: '+c.spellBlock.arcanum.join(', '));
   }
   lines.push('');
   lines.push('EQUIPMENT');
@@ -8102,7 +8183,7 @@ function characterToSharePayload(c){
     spellBlock: c.spellBlock ? {
       ability: c.spellBlock.ability, saveDC: c.spellBlock.saveDC,
       attackBonus: c.spellBlock.attackBonus, maxSpellLevel: c.spellBlock.maxSpellLevel,
-      cantrips: c.spellBlock.cantrips, known: c.spellBlock.known,
+      cantrips: c.spellBlock.cantrips, known: c.spellBlock.known, arcanum: c.spellBlock.arcanum || [],
     } : null,
     hook: c.hook, gold: c.gold, notes: c.notes || '',
     gear: c.gear.map(g => ({ n: g.n || null, name:g.name, isMagic: g.isMagic || false, kind: g.kind || null, rarity: g.rarity || null })),
@@ -8111,7 +8192,7 @@ function characterToSharePayload(c){
       spellBlock2: mc.spellBlock2 ? {
         ability: mc.spellBlock2.ability, saveDC: mc.spellBlock2.saveDC,
         attackBonus: mc.spellBlock2.attackBonus, maxSpellLevel: mc.spellBlock2.maxSpellLevel,
-        cantrips: mc.spellBlock2.cantrips, known: mc.spellBlock2.known,
+        cantrips: mc.spellBlock2.cantrips, known: mc.spellBlock2.known, arcanum: mc.spellBlock2.arcanum || [],
       } : null,
     } : null,
   };
