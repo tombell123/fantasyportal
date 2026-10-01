@@ -938,7 +938,7 @@ const MAGIC_ITEM_REGISTRY = {
   'Belt of Storm Giant Strength': MI('Wondrous Item','Legendary',true,'Your Strength score is 29 while you wear this belt, with no effect if your Strength is already 29 or higher.'),
   'Plate Armor of Etherealness': MI('Armor (plate)','Legendary',true,'This plate armor lets you use an action to become ethereal, along with everything you are wearing and carrying, allowing you to see and move through the Ethereal Plane.','AC 18 (base plate armor, no Dex bonus). No inherent AC bonus beyond that of plate itself.'),
   'Rod of Lordly Might': MI('Rod','Legendary',true,'This heavy rod bears six sharp buttons, each activating it as a different weapon type, flail, battleaxe, and more, along with additional powerful properties, including one that can drain a foe\u2019s life force to temporarily boost your own.','+3 to attack and damage rolls in any of its weapon forms (flail 1d8+3, battleaxe 1d8+3, and others), each also dealing an extra 2d6 damage of a type matching the button pressed.'),
-  'Robe of the Archmagi': MI('Wondrous Item','Legendary',true,'A robe worked with sigils of arcane power, granting +2 to Armor Class, advantage on saving throws against spells, and boosting the save DC and attack bonus of your own spells.','+2 AC (stacks with armor). Advantage on saves vs. spells. +2 to spell save DC and spell attack rolls if your alignment matches the robe\u2019s color.'),
+  'Robe of the Archmagi': MI('Wondrous Item','Legendary',true,'A robe worked with sigils of arcane power. While you wear it without armor, your base Armor Class is 15 + your Dexterity modifier, you have advantage on saving throws against spells and other magical effects, and your spell save DC and spell attack bonus each increase by 2.','Unarmored AC 15 + DEX, advantage on saves vs. spells, +2 spell save DC and spell attack'),
   'Ring of Invisibility': MI('Ring','Legendary',true,'While wearing this ring, you can turn invisible as an action, remaining so until you attack, cast a spell, or use an action to become visible again.'),
   'Iron Flask': MI('Wondrous Item','Legendary',false,'This heavy flask can be used to trap an extraplanar creature that fails a saving throw, holding it captive until the flask is opened or destroyed.'),
   'Ring of Elemental Command': MI('Ring','Legendary',true,'This powerful ring is attuned to one of the four elements, granting immunity to that element\u2019s damage, influence over related creatures, and other potent abilities.'),
@@ -5259,9 +5259,18 @@ const ARMOR_TABLE = {
   'Chain Mail': { ac:16, type:'heavy' },
   'Splint': { ac:17, type:'heavy' },
   'Plate': { ac:18, type:'heavy' },
+  // Magic plate armors (DMG): plate's AC 18, heavy.
+  'Armor of Invulnerability': { ac:18, type:'heavy' },
+  'Plate Armor of Etherealness': { ac:18, type:'heavy' },
 };
 
-function computeArmorClass(scores, cls, gear){
+// Armor Class with a step-by-step breakdown. opts (all optional):
+//   classes: class names whose Unarmored Defense applies (defaults to cls)
+//   draconic: Draconic Bloodline sorcerer (unarmored AC 13 + DEX)
+//   mediumArmorMaster: medium armor lets in up to +3 DEX instead of +2
+function armorClassBreakdown(scores, cls, gear, opts){
+  opts = opts || {};
+  const classes = opts.classes || [cls.name];
   const dexMod = mod(scores.dex);
   const names = gear.map(g => g.name);
 
@@ -5273,24 +5282,49 @@ function computeArmorClass(scores, cls, gear){
   }, 0);
   const magicShieldBonus = names.reduce((best, n) => {
     const match = /^\+(\d) Shield$/.exec(n);
-    return match ? Math.max(best, 2 + Number(match[1])) : best;
+    return match ? Math.max(best, Number(match[1])) : best;
   }, 0);
-  const shieldBonus = Math.max(hasMundaneShield ? 2 : 0, magicShieldBonus);
+  const hasShield = hasMundaneShield || magicShieldBonus > 0;
 
+  let parts;
+  let shieldAllowed = true;
   if(baseArmorName){
     const armor = ARMOR_TABLE[baseArmorName];
-    let dexContribution = 0;
-    if(armor.type === 'light') dexContribution = dexMod;
-    else if(armor.type === 'medium') dexContribution = Math.min(dexMod, 2);
-    // heavy: no Dex contribution at all
-    return armor.ac + dexContribution + magicArmorBonus + shieldBonus;
+    parts = [[baseArmorName+' ('+armor.type+' armor)', armor.ac, 'base']];
+    if(armor.type === 'light') parts.push(['DEX modifier (light armor adds all of it)', dexMod]);
+    else if(armor.type === 'medium'){
+      const cap = opts.mediumArmorMaster ? 3 : 2;
+      parts.push(['DEX modifier (medium armor adds up to +'+cap+(opts.mediumArmorMaster ? ', Medium Armor Master' : '')+')', Math.min(dexMod, cap)]);
+    } else parts.push(['DEX modifier (heavy armor adds none)', 0]);
+    if(magicArmorBonus) parts.push(['+'+magicArmorBonus+' Armor (magic)', magicArmorBonus]);
+  } else {
+    // No armor: use whichever unarmored formula gives the best AC.
+    const options = [{ parts:[['Unarmored base', 10, 'base'], ['DEX modifier', dexMod]], shieldOk:true }];
+    if(classes.includes('Barbarian')) options.push({ parts:[['Unarmored Defense (Barbarian)', 10, 'base'], ['DEX modifier', dexMod], ['CON modifier', mod(scores.con)]], shieldOk:true });
+    if(classes.includes('Monk')) options.push({ parts:[['Unarmored Defense (Monk)', 10, 'base'], ['DEX modifier', dexMod], ['WIS modifier', mod(scores.wis)]], shieldOk:false });
+    if(opts.draconic) options.push({ parts:[['Draconic Resilience (unarmored)', 13, 'base'], ['DEX modifier', dexMod]], shieldOk:true });
+    if(names.includes('Robe of the Archmagi')) options.push({ parts:[['Robe of the Archmagi (unarmored)', 15, 'base'], ['DEX modifier', dexMod]], shieldOk:true });
+    const score = o => sumParts(o.parts) + (o.shieldOk && hasShield ? 2 + magicShieldBonus : 0);
+    const best = options.reduce((a, b) => score(b) > score(a) ? b : a);
+    parts = best.parts.slice();
+    shieldAllowed = best.shieldOk;
   }
+  if(hasShield && shieldAllowed){
+    parts.push(['Shield', 2]);
+    if(magicShieldBonus) parts.push(['+'+magicShieldBonus+' Shield (magic)', magicShieldBonus]);
+  }
+  ['Cloak of Protection', 'Ring of Protection'].forEach(item => { if(names.includes(item)) parts.push([item, 1]); });
+  return { total: sumParts(parts), parts };
+}
 
-  // No base armor worn — Barbarian and Monk get their Unarmored Defense
-  // class features instead of the flat 10 + Dex everyone else uses.
-  if(cls.name === 'Barbarian') return 10 + dexMod + mod(scores.con) + shieldBonus;
-  if(cls.name === 'Monk') return 10 + dexMod + mod(scores.wis); // shields break Monk's Unarmored Defense
-  return 10 + dexMod + shieldBonus;
+function computeArmorClass(scores, cls, gear, opts){
+  return armorClassBreakdown(scores, cls, gear, opts).total;
+}
+
+// Adds up a breakdown. A part's value is a number, or {set:N} for items that
+// set a score to N (only recorded when that raised it).
+function sumParts(parts){
+  return parts.reduce((t, p) => (p[1] && typeof p[1] === 'object') ? p[1].set : t + p[1], 0);
 }
 
 function proficiencyBonus(level){
@@ -5369,12 +5403,26 @@ function asiLevelsForClass(clsName){
 const FEAT_CHANCE_BEFORE_MAX = 0.15;
 const FEAT_CHANCE_AFTER_MAX = 0.6;
 
-function applyAbilityScoreImprovements(scores, cls, asiCount, order){
+// Feats that also raise one ability score by 1 (the "half feats"), and
+// which abilities each can raise. Resilient can be any ability.
+const FEAT_ABILITY_OPTIONS = {
+  'Actor':['cha'], 'Athlete':['str','dex'], 'Durable':['con'], 'Heavily Armored':['str'],
+  'Heavy Armor Master':['str'], 'Keen Mind':['int'], 'Linguist':['int'], 'Lightly Armored':['str','dex'],
+  'Moderately Armored':['str','dex'], 'Observant':['int','wis'], 'Tavern Brawler':['str','con'],
+  'Resilient':['str','dex','con','int','wis','cha'],
+};
+
+// asiLabels: one label per ASI the character has earned, e.g. "Fighter 4".
+// scoreParts (optional): per-ability breakdown lists to append to.
+function applyAbilityScoreImprovements(scores, cls, asiLabels, order, scoreParts){
   let out = Object.assign({}, scores);
   const feats = [];
+  const extraSaves = [];
   order = order || cls.primary;
+  const note = (ab, label, v) => { if(scoreParts) scoreParts[ab].push([label, v]); };
 
-  for(let i = 0; i < asiCount; i++){
+  for(let i = 0; i < asiLabels.length; i++){
+    const asiLabel = asiLabels[i];
     const featChance = out[order[0]] >= 20 ? FEAT_CHANCE_AFTER_MAX : FEAT_CHANCE_BEFORE_MAX;
     const tryFeat = Math.random() < featChance;
     const eligible = tryFeat ? Object.keys(FEAT_REGISTRY).filter(name => {
@@ -5386,22 +5434,36 @@ function applyAbilityScoreImprovements(scores, cls, asiCount, order){
     if(eligible.length > 0){
       const chosen = drawFromBag('feat:'+cls.name, eligible);
       feats.push(chosen);
-      if(chosen === 'Actor') out.cha = Math.min(20, out.cha + 1);
-      else if(chosen === 'Resilient') out[order[0]] = Math.min(20, out[order[0]] + 1);
+      const options = FEAT_ABILITY_OPTIONS[chosen];
+      if(options){
+        // Raise the most useful allowed ability that isn't already 20. For
+        // Resilient, prefer one the class isn't already proficient in saving with.
+        let ranked = order.filter(a => options.includes(a) && out[a] < 20);
+        if(chosen === 'Resilient'){
+          const fresh = ranked.filter(a => !cls.saves.includes(a));
+          if(fresh.length) ranked = fresh;
+        }
+        const ab = ranked[0] || options.find(a => !(chosen === 'Resilient' && cls.saves.includes(a))) || options[0];
+        if(out[ab] < 20){ out[ab] += 1; note(ab, chosen+' feat ('+asiLabel+')', 1); }
+        if(chosen === 'Resilient') extraSaves.push(ab);
+      }
       continue;
     }
 
     let points = 2;
     let idx = 0;
+    const gained = {};
     while(points > 0 && idx < order.length){
       const stat = order[idx];
       if(out[stat] >= 20){ idx++; continue; }
       out[stat] += 1;
+      gained[stat] = (gained[stat] || 0) + 1;
       points -= 1;
     }
+    Object.keys(gained).forEach(ab => note(ab, 'Ability Score Improvement ('+asiLabel+')', gained[ab]));
   }
 
-  return { scores: out, feats };
+  return { scores: out, feats, extraSaves };
 }
 
 // Some magic items set an ability score to a fixed value while worn (no
@@ -5613,7 +5675,14 @@ async function generateCharacter(level, locks, multiclassCls){
   const plannedSubclass = level >= cls.subclassLevel ? pick(cls.subclasses) : null;
   const statOrder = (THIRD_CASTER_SUBCLASSES[plannedSubclass] || {}).primary || null;
   let scores = assignAbilityScores(cls, statOrder);
+  const baseScores = Object.assign({}, scores);
   scores = applyRacialBonuses(scores, race);
+  // Where each ability score came from, for the sheet's "how is this worked out" view.
+  const scoreParts = {};
+  ABILS.forEach(a => {
+    scoreParts[a] = [['Standard array', baseScores[a], 'base']];
+    if(scores[a] !== baseScores[a]) scoreParts[a].push(['Race ('+race.name+')', scores[a] - baseScores[a]]);
+  });
 
   // Multiclassing: only offered at level 3+ so both classes get at least
   // one meaningful level, and only when the rolled ability scores actually
@@ -5640,31 +5709,45 @@ async function generateCharacter(level, locks, multiclassCls){
 
   // ASIs come from each class's own levels (a Fighter 6 / Wizard 4 gets
   // Fighter's 4 and 6 plus Wizard's 4).
-  const asiCount = asiLevelsForClass(cls.name).filter(l => l <= level1).length +
-    (cls2 ? asiLevelsForClass(cls2.name).filter(l => l <= level2).length : 0);
-  const asiResult = applyAbilityScoreImprovements(scores, cls, asiCount, statOrder);
+  const asiLabels = asiLevelsForClass(cls.name).filter(l => l <= level1).map(l => cls.name+' '+l)
+    .concat(cls2 ? asiLevelsForClass(cls2.name).filter(l => l <= level2).map(l => cls2.name+' '+l) : []);
+  const asiResult = applyAbilityScoreImprovements(scores, cls, asiLabels, statOrder, scoreParts);
   scores = asiResult.scores;
   const feats = asiResult.feats;
+  const extraSaves = asiResult.extraSaves;
 
   const mundaneGear = cls.gear.concat(bg.gear).map(g => ({
     n:g.n, name:g.name, isMagic:false, kind:'equipment'
   }));
   const magicGear = await getMagicItemsForLevel(level);
   const gear = mundaneGear.concat(magicGear);
+  const beforeItems = Object.assign({}, scores);
   scores = applyMagicItemStatBonuses(scores, gear);
+  ABILS.forEach(a => {
+    if(scores[a] !== beforeItems[a]){
+      const item = gear.map(g => g.name).find(n => STAT_ITEM_TABLE[n] && STAT_ITEM_TABLE[n].ability === a && STAT_ITEM_TABLE[n].value === scores[a]);
+      scoreParts[a].push([(item || 'Magic item')+' (sets it to '+scores[a]+')', { set: scores[a] }]);
+    }
+  });
 
   const prof = proficiencyBonus(level);
 
   // hp: max at level 1 (first class only), average roll (rounded up) each
-  // level after, using whichever class that level was taken in.
-  let hp = cls.hitDie + mod(scores.con);
+  // level after, using whichever class that level was taken in, plus CON
+  // every level and any per-level bonuses.
+  const hpParts = [['Level 1 ('+cls.name+'): maximum of a d'+cls.hitDie, cls.hitDie, 'base']];
   const dieAvg1 = Math.ceil((cls.hitDie/2)+0.5);
-  for(let i=2;i<=level1;i++){ hp += dieAvg1 + mod(scores.con); }
+  if(level1 > 1) hpParts.push(['Levels 2\u2013'+level1+' ('+cls.name+'): average d'+cls.hitDie+' roll, rounded up ('+dieAvg1+') \u00d7 '+(level1-1), dieAvg1*(level1-1)]);
   if(cls2){
     const dieAvg2 = Math.ceil((cls2.hitDie/2)+0.5);
-    for(let i=1;i<=level2;i++){ hp += dieAvg2 + mod(scores.con); }
+    hpParts.push([cls2.name+' levels: average d'+cls2.hitDie+' roll, rounded up ('+dieAvg2+') \u00d7 '+level2, dieAvg2*level2]);
   }
-  hp = Math.max(hp, level);
+  hpParts.push(['CON modifier ('+fmtMod(mod(scores.con))+') \u00d7 '+level+' levels', mod(scores.con)*level]);
+  if(feats.includes('Tough')) hpParts.push(['Tough feat (+2 per level) \u00d7 '+level, 2*level]);
+  if(race.name === 'Hill Dwarf') hpParts.push(['Dwarven Toughness (+1 per level) \u00d7 '+level, level]);
+  const sorcLevel = cls.name === 'Sorcerer' ? level1 : (cls2 && cls2.name === 'Sorcerer' ? level2 : 0);
+  let hp = sumParts(hpParts);
+  if(hp < level){ hpParts.push(['Minimum of 1 HP per level', level - hp]); hp = level; }
 
   let skills = pickN(cls.skillChoices, cls.skillCount).concat(bg.skills);
   if(cls2 && MULTICLASS_SKILL_COUNT[cls2.name]){
@@ -5680,16 +5763,39 @@ async function generateCharacter(level, locks, multiclassCls){
   // single-classed; only the shared slot pool uses the combined level).
   const subclass = level1 >= cls.subclassLevel ? plannedSubclass : null;
   const subclass2 = cls2 && level2 >= cls2.subclassLevel ? pick(cls2.subclasses) : null;
+  if(sorcLevel && (subclass === 'Draconic Bloodline' || subclass2 === 'Draconic Bloodline')){
+    hpParts.push(['Draconic Resilience (+1 per Sorcerer level) \u00d7 '+sorcLevel, sorcLevel]);
+    hp += sorcLevel;
+  }
+
+  // Skilled feat: three more skill proficiencies.
+  if(feats.includes('Skilled')){
+    const extra = pickN(Object.keys(SKILL_ABILITY).filter(sk => !uniqueSkills.includes(sk)), 3);
+    uniqueSkills.push(...extra);
+  }
+  // Expertise: Rogue 1 and 6, Bard 3 and 10, two proficient skills each.
+  const levelIn = name => cls.name === name ? level1 : (cls2 && cls2.name === name ? level2 : 0);
+  const expertiseCount = (levelIn('Rogue') >= 1 ? 2 : 0) + (levelIn('Rogue') >= 6 ? 2 : 0) +
+    (levelIn('Bard') >= 3 ? 2 : 0) + (levelIn('Bard') >= 10 ? 2 : 0);
+  // Players pick Expertise in skills they're already good at: rank proficient
+  // skills by their ability modifier (random among ties) and take the best.
+  const expertise = uniqueSkills.map(sk => ({ sk, r: mod(scores[SKILL_ABILITY[sk]]) + Math.random() * 0.9 }))
+    .sort((a, b) => b.r - a.r).slice(0, expertiseCount).map(x => x.sk);
   const spellBlock = buildSpellBlockForClass(cls, level1, scores, prof) ||
     buildThirdCasterSpellBlock(subclass, level1, scores, prof);
   const spellBlock2 = cls2 ? (buildSpellBlockForClass(cls2, level2, scores, prof) ||
     buildThirdCasterSpellBlock(subclass2, level2, scores, prof)) : null;
 
-  const ac = computeArmorClass(scores, cls, gear);
+  const ac = computeArmorClass(scores, cls, gear, {
+    classes: [cls.name].concat(cls2 ? [cls2.name] : []),
+    draconic: subclass === 'Draconic Bloodline' || subclass2 === 'Draconic Bloodline',
+    mediumArmorMaster: feats.includes('Medium Armor Master'),
+  });
 
   return {
     name, level, race, bg, alignment, scores, prof, hp, ac, cls,
     speed: race.speed, skills: uniqueSkills, spellBlock, subclass, feats,
+    expertise, extraSaves, scoreParts, hpParts,
     hook: pick(FLAVOR_HOOKS),
     gold: bg.gold,
     gear,
@@ -7002,31 +7108,220 @@ function generateEncounter(partySize, partyLevel, difficulty, includeHook){
 
 /* ================= RENDER ================= */
 
-function scoreRow(scores){
+/* ============================================================
+   SHEET MATHS — every number on the character sheet, with the
+   steps that produce it. The sheet shows .total and clicking a
+   number shows .parts, so the two can never disagree.
+   Each part is [label, value, kind?]; kind 'base' = a starting
+   number rather than a bonus.
+   ============================================================ */
+function classLevelOf(c, name){
+  if(c.cls && c.cls.name === name) return c.multiclass ? c.multiclass.level1 : c.level;
+  if(c.multiclass && c.multiclass.cls2 && c.multiclass.cls2.name === name) return c.multiclass.level2;
+  return 0;
+}
+function hasSubclass(c, name){ return c.subclass === name || !!(c.multiclass && c.multiclass.subclass2 === name); }
+function hasFeat(c, name){ return (c.feats || []).includes(name); }
+function gearNamesOf(c){ return (c.gear || []).map(g => g.name); }
+function calcResult(parts, extra){ return Object.assign({ total: sumParts(parts), parts }, extra || {}); }
+
+function sheetArmorClass(c){
+  return armorClassBreakdown(c.scores, c.cls, c.gear || [], {
+    classes: [c.cls.name].concat(c.multiclass ? [c.multiclass.cls2.name] : []),
+    draconic: hasSubclass(c, 'Draconic Bloodline'),
+    mediumArmorMaster: hasFeat(c, 'Medium Armor Master'),
+  });
+}
+
+function sheetSpeed(c){
+  const parts = [['Base walking speed ('+c.race.name+')', c.race.speed, 'base']];
+  const names = gearNamesOf(c);
+  const armor = ARMOR_TABLE[names.find(n => ARMOR_TABLE[n])];
+  const shield = names.includes('Shield') || names.some(n => /^\+\d Shield$/.test(n));
+  if(names.includes('Boots of Striding and Springing') && c.race.speed < 30) parts.push(['Boots of Striding and Springing (walking speed becomes 30 ft)', 30 - c.race.speed]);
+  const monk = classLevelOf(c, 'Monk');
+  if(monk >= 2 && !armor && !shield){
+    const bonus = monk >= 18 ? 30 : monk >= 14 ? 25 : monk >= 10 ? 20 : monk >= 6 ? 15 : 10;
+    parts.push(['Unarmored Movement (Monk '+monk+', no armor or shield)', bonus]);
+  }
+  if(classLevelOf(c, 'Barbarian') >= 5 && !(armor && armor.type === 'heavy')) parts.push(['Fast Movement (Barbarian 5+, not in heavy armor)', 10]);
+  if(hasFeat(c, 'Mobile')) parts.push(['Mobile feat', 10]);
+  return calcResult(parts);
+}
+
+// Half proficiency on checks you aren't proficient in: Jack of All Trades
+// (Bard 2+, any ability, rounded down) or Remarkable Athlete (Champion 7+,
+// STR/DEX/CON only, rounded up). They don't stack; the better one applies.
+function halfProficiencyPart(c, ability){
+  const options = [];
+  if(classLevelOf(c, 'Bard') >= 2) options.push(['Jack of All Trades (half proficiency, rounded down)', Math.floor(c.prof / 2)]);
+  if(hasSubclass(c, 'Champion') && classLevelOf(c, 'Fighter') >= 7 && ['str','dex','con'].includes(ability))
+    options.push(['Remarkable Athlete (half proficiency, rounded up)', Math.ceil(c.prof / 2)]);
+  return options.sort((a, b) => b[1] - a[1])[0] || null;
+}
+
+function sheetInitiative(c){
+  const parts = [['DEX modifier', mod(c.scores.dex)]];
+  const half = halfProficiencyPart(c, 'dex');
+  if(half) parts.push(half);
+  if(hasFeat(c, 'Alert')) parts.push(['Alert feat', 5]);
+  return calcResult(parts);
+}
+
+function sheetSkill(c, skill){
+  const ab = SKILL_ABILITY[skill];
+  const parts = [[ABIL_NAMES[ab]+' modifier ('+skill+' uses '+ab.toUpperCase()+')', mod(c.scores[ab])]];
+  const proficient = c.skills.includes(skill);
+  const expert = proficient && (c.expertise || []).includes(skill);
+  if(expert) parts.push(['Proficiency bonus × 2 (Expertise)', c.prof * 2]);
+  else if(proficient) parts.push(['Proficiency bonus (proficient)', c.prof]);
+  else { const half = halfProficiencyPart(c, ab); if(half) parts.push(half); }
+  return calcResult(parts, { proficient, expert });
+}
+
+function sheetPassivePerception(c){
+  const skill = sheetSkill(c, 'Perception');
+  const parts = [['Base', 10, 'base']].concat(skill.parts);
+  if(hasFeat(c, 'Observant')) parts.push(['Observant feat', 5]);
+  return calcResult(parts);
+}
+
+function sheetSave(c, ab){
+  const parts = [[ABIL_NAMES[ab]+' modifier', mod(c.scores[ab])]];
+  let proficient = true;
+  if(c.cls.saves.includes(ab)) parts.push(['Proficiency bonus ('+c.cls.name+'s are proficient in '+ab.toUpperCase()+' saves)', c.prof]);
+  else if((c.extraSaves || []).includes(ab)) parts.push(['Proficiency bonus (Resilient feat)', c.prof]);
+  else if(classLevelOf(c, 'Monk') >= 14) parts.push(['Proficiency bonus (Diamond Soul: all saves)', c.prof]);
+  else proficient = false;
+  if(classLevelOf(c, 'Paladin') >= 6) parts.push(['Aura of Protection (CHA modifier, minimum +1)', Math.max(1, mod(c.scores.cha))]);
+  const names = gearNamesOf(c);
+  ['Cloak of Protection', 'Ring of Protection'].forEach(item => { if(names.includes(item)) parts.push([item, 1]); });
+  return calcResult(parts, { proficient });
+}
+
+function spellItemBonusParts(c){
+  const names = gearNamesOf(c);
+  return ['Staff of Power', 'Staff of the Magi', 'Robe of the Archmagi'].filter(n => names.includes(n)).map(n => [n, 2]);
+}
+function sheetSpellDC(c, sb){
+  return calcResult([['Base', 8, 'base'], ['Proficiency bonus', c.prof], [ABIL_NAMES[sb.ability]+' modifier', mod(c.scores[sb.ability])]].concat(spellItemBonusParts(c)));
+}
+function sheetSpellAttack(c, sb){
+  return calcResult([['Proficiency bonus', c.prof], [ABIL_NAMES[sb.ability]+' modifier', mod(c.scores[sb.ability])]].concat(spellItemBonusParts(c)));
+}
+
+// Recomputes every derived number on the character so the sheet, exports and
+// tracker all agree (older saved rolls predate some of these rules).
+function refreshDerivedStats(c){
+  c.ac = sheetArmorClass(c).total;
+  c.speed = sheetSpeed(c).total;
+  [c.spellBlock, c.multiclass && c.multiclass.spellBlock2].forEach(sb => {
+    if(!sb) return;
+    sb.saveDC = sheetSpellDC(c, sb).total;
+    sb.attackBonus = sheetSpellAttack(c, sb).total;
+  });
+  return c;
+}
+
+const CALC_NOTES = {
+  hp: 'At 1st level you get the highest number on your class’s hit die. Each level after, you add the average roll rounded up (many tables roll instead). Your CON modifier is added for every level, so raising CON later raises HP for all of them.',
+  ac: 'Armor sets your base AC. Light armor adds your full DEX modifier, medium adds up to +2, heavy adds none. Without armor it’s 10 + DEX, unless a class feature gives a better formula. A shield adds +2.',
+  speed: 'How many feet you can move on your turn.',
+  prof: 'Your proficiency bonus comes from your total character level, even if you’re multiclassed: +2 at levels 1–4, +3 at 5–8, +4 at 9–12, +5 at 13–16, +6 at 17–20. You add it to anything you’re proficient in.',
+  init: 'Initiative decides turn order. At the start of combat everyone rolls a d20 and adds this bonus.',
+  passive: 'Passive Perception is what you notice without actively looking: 10 + your Perception bonus. The DM compares it with how well something is hidden.',
+  skill: 'For a skill check, roll a d20 and add this. You add your proficiency bonus only for skills you’re proficient in (twice with Expertise).',
+  save: 'When something forces a saving throw, roll a d20 and add this. Every class is proficient in two saving throws.',
+  spelldc: 'When one of your spells forces a saving throw, the target has to roll this number or higher.',
+  spellatk: 'For a spell that makes an attack, roll a d20 and add this.',
+};
+
+function abilityCalc(c, ab){
+  const score = c.scores[ab];
+  const m = mod(score);
+  const recorded = c.scoreParts && c.scoreParts[ab] && sumParts(c.scoreParts[ab]) === score;
+  const parts = recorded ? c.scoreParts[ab] : [[ABIL_NAMES[ab]+' score', score, 'base']];
+  const modLine = 'Modifier = (score − 10) ÷ 2, rounded down: ('+score+' − 10) ÷ 2 = '+((score-10)/2)+(Number.isInteger((score-10)/2) ? '' : ' → '+m)+', so '+fmtMod(m)+'.';
+  const note = (recorded ? 'Starting scores use the standard array (15, 14, 13, 12, 10, 8), assigned to the abilities this class relies on most. ' : 'Where each point came from isn\u2019t included for this character (share links and older saves leave it out). ') + modLine;
+  return { title: ABIL_NAMES[ab]+' '+score+' ('+fmtMod(m)+')', total: score, parts, note };
+}
+
+// key: 'hp' | 'ac' | 'speed' | 'prof' | 'init' | 'passive' | 'abil:str' |
+//      'save:str' | 'skill:Stealth' | 'spelldc:1' | 'spellatk:2'
+function sheetCalc(c, key){
+  const [kind, arg] = key.split(':');
+  if(kind === 'abil') return abilityCalc(c, arg);
+  if(kind === 'hp'){
+    const ok = c.hpParts && sumParts(c.hpParts) === c.hp;
+    return { title:'Hit Points: '+c.hp, total:c.hp, parts: ok ? c.hpParts : [['Hit points', c.hp, 'base']],
+      note: (ok ? '' : 'The level-by-level breakdown isn\u2019t included for this character (share links and older saves leave it out). ') + CALC_NOTES.hp };
+  }
+  if(kind === 'ac'){ const r = sheetArmorClass(c); return Object.assign(r, { title:'Armor Class: '+r.total, note:CALC_NOTES.ac }); }
+  if(kind === 'speed'){ const r = sheetSpeed(c); return Object.assign(r, { title:'Speed: '+r.total+' ft', note:CALC_NOTES.speed, unit:' ft' }); }
+  if(kind === 'prof') return { title:'Proficiency Bonus: '+fmtMod(c.prof), total:c.prof, parts:[['Character level '+c.level, c.prof]], note:CALC_NOTES.prof, signedTotal:true };
+  if(kind === 'init'){ const r = sheetInitiative(c); return Object.assign(r, { title:'Initiative: '+fmtMod(r.total), note:CALC_NOTES.init, signedTotal:true }); }
+  if(kind === 'passive'){ const r = sheetPassivePerception(c); return Object.assign(r, { title:'Passive Perception: '+r.total, note:CALC_NOTES.passive }); }
+  if(kind === 'skill'){ const r = sheetSkill(c, arg); return Object.assign(r, { title:arg+': '+fmtMod(r.total), note:CALC_NOTES.skill, signedTotal:true }); }
+  if(kind === 'save'){ const r = sheetSave(c, arg); return Object.assign(r, { title:ABIL_NAMES[arg]+' Saving Throw: '+fmtMod(r.total), note:CALC_NOTES.save, signedTotal:true }); }
+  if(kind === 'spelldc' || kind === 'spellatk'){
+    const sb = arg === '2' ? c.multiclass.spellBlock2 : c.spellBlock;
+    const r = kind === 'spelldc' ? sheetSpellDC(c, sb) : sheetSpellAttack(c, sb);
+    return Object.assign(r, kind === 'spelldc'
+      ? { title:'Spell Save DC: '+r.total, note:CALC_NOTES.spelldc }
+      : { title:'Spell Attack: '+fmtMod(r.total), note:CALC_NOTES.spellatk, signedTotal:true });
+  }
+  return null;
+}
+
+function calcBreakdownHTML(r){
+  const fmtVal = (p) => (p[1] && typeof p[1] === 'object') ? 'becomes '+p[1].set : (p[2] === 'base' ? String(p[1]) : fmtMod(p[1]));
+  const rows = r.parts.map(p => '<tr><td>'+p[0]+'</td><td class="calc-num">'+fmtVal(p)+'</td></tr>').join('');
+  const total = r.signedTotal ? fmtMod(r.total) : r.total + (r.unit || '');
+  return '<table class="calc-table"><tbody>'+rows+'</tbody>' +
+    '<tfoot><tr><td>Total</td><td class="calc-num">'+total+'</td></tr></tfoot></table>' +
+    (r.note ? '<p class="calc-note">'+r.note+'</p>' : '');
+}
+
+// The character currently on the sheet, for the breakdown pop-up.
+let sheetCharacter = null;
+function showSheetCalc(key){
+  if(!sheetCharacter) return;
+  const r = sheetCalc(sheetCharacter, key);
+  if(!r) return;
+  openModal(r.title);
+  modalMeta.innerHTML = '<b>How this is worked out</b>';
+  modalBody.innerHTML = calcBreakdownHTML(r);
+}
+function calcBtn(key, text, extraClass){
+  return '<button type="button" class="calc-btn'+(extraClass ? ' '+extraClass : '')+'" data-kind="calc" data-name="'+key+'" title="How is this worked out?">'+text+'</button>';
+}
+
+function scoreRow(scores, clickable){
   return ABILS.map(a=>{
     const m = mod(scores[a]);
-    return '<div class="ability"><div class="a-name">'+a.toUpperCase()+'</div>'+
+    const inner = '<div class="a-name">'+a.toUpperCase()+'</div>'+
       '<div class="a-score">'+scores[a]+'</div>'+
-      '<div class="a-mod">'+fmtMod(m)+'</div></div>';
+      '<div class="a-mod">'+fmtMod(m)+'</div>';
+    return clickable
+      ? '<button type="button" class="ability calc-box" data-kind="calc" data-name="abil:'+a+'" title="How is this worked out?">'+inner+'</button>'
+      : '<div class="ability">'+inner+'</div>';
   }).join('');
 }
 
-function savesRow(scores, clsSaves, prof){
+function savesRow(c){
   return ABILS.map(a=>{
-    const proficient = clsSaves.includes(a);
-    const bonus = mod(scores[a]) + (proficient ? prof : 0);
-    return '<div class="ability save-ability'+(proficient?' proficient':'')+'"><div class="a-name">'+a.toUpperCase()+'</div>'+
-      '<div class="a-mod save-mod">'+fmtMod(bonus)+'</div>'+
-      (proficient ? '<div class="save-dot" title="Proficient"></div>' : '') +
-      '</div>';
+    const r = sheetSave(c, a);
+    return '<button type="button" class="ability save-ability calc-box'+(r.proficient?' proficient':'')+'" data-kind="calc" data-name="save:'+a+'" title="How is this worked out?"><div class="a-name">'+a.toUpperCase()+'</div>'+
+      '<div class="a-mod save-mod">'+fmtMod(r.total)+'</div>'+
+      (r.proficient ? '<div class="save-dot" title="Proficient"></div>' : '') +
+      '</button>';
   }).join('');
 }
 
-function skillTags(skills, scores, prof){
-  return '<div class="tag-row">' + skills.map(s=>{
-    const ab = SKILL_ABILITY[s];
-    const bonus = mod(scores[ab]) + prof;
-    return '<span class="tag">'+s+' '+fmtMod(bonus)+'</span>';
+function skillTags(c){
+  return '<div class="tag-row">' + c.skills.map(s=>{
+    const r = sheetSkill(c, s);
+    return '<button type="button" class="tag skill-tag" data-kind="calc" data-name="skill:'+s+'" title="How is this worked out?">'+s+' '+fmtMod(r.total)+(r.expert ? ' <span class="skill-expert">Expertise</span>' : '')+'</button>';
   }).join('') + '</div>';
 }
 
@@ -7466,11 +7761,13 @@ function classFeaturesSection(c){
   '</details>';
 }
 
-function spellSection(sb, cls, showClassName){
+function spellSection(sb, cls, showClassName, c, which){
   if(!sb) return '';
   const title = sb.label || (showClassName ? (cls.name+' Spellcasting') : 'Spellcasting');
   let html = '<div class="section"><h3 class="section-title">'+title+'</h3>';
-  html += '<div class="spell-meta">Ability <b>'+ABIL_NAMES[sb.ability]+'</b> &nbsp;·&nbsp; Save DC <b>'+sb.saveDC+'</b> &nbsp;·&nbsp; Attack <b>'+fmtMod(sb.attackBonus)+'</b> &nbsp;·&nbsp; Max spell level <b>'+sb.maxSpellLevel+'</b></div>';
+  const dc = c ? calcBtn('spelldc:'+which, '<b>'+sb.saveDC+'</b>') : '<b>'+sb.saveDC+'</b>';
+  const atk = c ? calcBtn('spellatk:'+which, '<b>'+fmtMod(sb.attackBonus)+'</b>') : '<b>'+fmtMod(sb.attackBonus)+'</b>';
+  html += '<div class="spell-meta">Ability <b>'+ABIL_NAMES[sb.ability]+'</b> &nbsp;·&nbsp; Save DC '+dc+' &nbsp;·&nbsp; Attack '+atk+' &nbsp;·&nbsp; Max spell level <b>'+sb.maxSpellLevel+'</b></div>';
   if(sb.cantrips.length){
     html += '<div class="spell-group-label">Cantrips</div><div class="tag-row">'+sb.cantrips.map(spellTagBtn).join('')+'</div>';
   }
@@ -7521,6 +7818,8 @@ function equipmentSection(gear){
 function renderSheet(c){
   const el = document.getElementById('sheetContainer');
   const mc = c.multiclass;
+  refreshDerivedStats(c);
+  sheetCharacter = c;
   const subclassLine = c.subclass ? (c.cls.subclassLabel+': <b>'+c.subclass+'</b>') : (c.cls.subclassLabel+' not yet chosen');
   const subclassLine2 = mc && mc.subclass2 ? (mc.cls2.subclassLabel+': <b>'+mc.subclass2+'</b>') : (mc ? mc.cls2.subclassLabel+' not yet chosen' : '');
   const classLabel = mc
@@ -7545,19 +7844,20 @@ function renderSheet(c){
       '</div>' +
 
       '<div class="core-stats">' +
-        '<div class="core-stat"><span class="cs-label">Hit Points</span><span class="cs-value">'+c.hp+'</span></div>' +
-        '<div class="core-stat"><span class="cs-label">Armor Class</span><span class="cs-value">'+c.ac+'</span></div>' +
-        '<div class="core-stat"><span class="cs-label">Speed</span><span class="cs-value">'+c.speed+' ft</span></div>' +
-        '<div class="core-stat"><span class="cs-label">Proficiency</span><span class="cs-value">'+fmtMod(c.prof)+'</span></div>' +
+        '<div class="core-stat"><span class="cs-label">Hit Points</span>'+calcBtn('hp', c.hp, 'cs-value')+'</div>' +
+        '<div class="core-stat"><span class="cs-label">Armor Class</span>'+calcBtn('ac', c.ac, 'cs-value')+'</div>' +
+        '<div class="core-stat"><span class="cs-label">Speed</span>'+calcBtn('speed', c.speed+' ft', 'cs-value')+'</div>' +
+        '<div class="core-stat"><span class="cs-label">Proficiency</span>'+calcBtn('prof', fmtMod(c.prof), 'cs-value')+'</div>' +
       '</div>' +
 
-      '<p class="mini-stats">Initiative <b>'+fmtMod(mod(c.scores.dex))+'</b><span class="mini-stats-sep">\u00b7</span>Passive Perception <b>'+(10 + mod(c.scores.wis) + (c.skills.includes('Perception') ? c.prof : 0))+'</b></p>' +
+      '<p class="mini-stats">Initiative '+calcBtn('init', '<b>'+fmtMod(sheetInitiative(c).total)+'</b>')+'<span class="mini-stats-sep">\u00b7</span>Passive Perception '+calcBtn('passive', '<b>'+sheetPassivePerception(c).total+'</b>')+'</p>' +
+      '<p class="calc-hint">Click any number to see how it\u2019s worked out.</p>' +
 
-      '<div class="abilities">' + scoreRow(c.scores) + '</div>' +
+      '<div class="abilities">' + scoreRow(c.scores, true) + '</div>' +
 
       '<div class="section">' +
         '<h3 class="section-title">Saving Throws</h3>' +
-        '<div class="abilities saves-grid">' + savesRow(c.scores, c.cls.saves, c.prof) + '</div>' +
+        '<div class="abilities saves-grid">' + savesRow(c) + '</div>' +
       '</div>' +
 
       '<div class="two-col">' +
@@ -7587,11 +7887,11 @@ function renderSheet(c){
 
       '<div class="section">' +
         '<h3 class="section-title">Skill Proficiencies</h3>' +
-        skillTags(c.skills, c.scores, c.prof) +
+        skillTags(c) +
       '</div>' +
 
-      spellSection(c.spellBlock, c.cls, !!mc) +
-      (mc ? spellSection(mc.spellBlock2, mc.cls2, true) : '') +
+      spellSection(c.spellBlock, c.cls, !!mc, c, 1) +
+      (mc ? spellSection(mc.spellBlock2, mc.cls2, true, c, 2) : '') +
 
       equipmentSection(c.gear) +
 
@@ -7903,16 +8203,16 @@ function characterToText(c){
   lines.push(c.name+', Level '+c.level+' '+c.race.name+' '+c.cls.name);
   lines.push(c.bg.name+' · '+c.alignment);
   lines.push('');
+  refreshDerivedStats(c);
   lines.push('HP '+c.hp+'   AC '+c.ac+'   Speed '+c.speed+'ft   Proficiency '+fmtMod(c.prof));
-  lines.push('Initiative '+fmtMod(mod(c.scores.dex))+'   Passive Perception '+(10 + mod(c.scores.wis) + (c.skills.includes('Perception') ? c.prof : 0)));
+  lines.push('Initiative '+fmtMod(sheetInitiative(c).total)+'   Passive Perception '+sheetPassivePerception(c).total);
   lines.push('');
   lines.push(ABILS.map(a => a.toUpperCase()+' '+c.scores[a]+' ('+fmtMod(mod(c.scores[a]))+')').join('   '));
   lines.push('');
   lines.push('SAVING THROWS');
   lines.push(ABILS.map(a => {
-    const proficient = c.cls.saves.includes(a);
-    const bonus = mod(c.scores[a]) + (proficient ? c.prof : 0);
-    return a.toUpperCase()+' '+fmtMod(bonus)+(proficient?'*':'');
+    const r = sheetSave(c, a);
+    return a.toUpperCase()+' '+fmtMod(r.total)+(r.proficient?'*':'');
   }).join('   ') + '   (* = proficient)');
   lines.push('');
   lines.push('RACE TRAITS');
@@ -7928,7 +8228,7 @@ function characterToText(c){
   lines.push(c.subclass ? (c.cls.subclassLabel+': '+c.subclass) : (c.cls.subclassLabel+' not yet chosen'));
   lines.push('');
   lines.push('SKILLS');
-  lines.push(c.skills.map(s => s+' '+fmtMod(mod(c.scores[SKILL_ABILITY[s]])+c.prof)).join(', '));
+  lines.push(c.skills.map(s => { const r = sheetSkill(c, s); return s+' '+fmtMod(r.total)+(r.expert ? ' (expertise)' : ''); }).join(', '));
   if(c.spellBlock){
     lines.push('');
     lines.push('SPELLCASTING');
@@ -8155,6 +8455,7 @@ feedbackForm.addEventListener('submit', (e) => {
 });
 
 function handleTagClick(kind, name){
+  if(kind === 'calc'){ showSheetCalc(name); return; }
   openModal(name);
 
   if(kind === 'spell'){
@@ -8249,13 +8550,23 @@ function decodeShareParam(encoded){
   }
 }
 
-function characterToSharePayload(c){
+// Breakdown parts are [label, value, kind] in memory; Firestore can't store
+// arrays inside arrays, so they're saved as {l, v, k} objects.
+function partsToStore(parts){ return parts ? parts.map(p => ({ l:p[0], v:p[1], k:p[2] || null })) : null; }
+function partsFromStore(arr){ return Array.isArray(arr) ? arr.map(o => Array.isArray(o) ? o : [o.l, o.v, o.k || undefined]) : null; }
+
+// withBreakdowns: include where each score/HP point came from. Saved rolls
+// keep it; share links leave it out to keep URLs short.
+function characterToSharePayload(c, withBreakdowns){
   const mc = c.multiclass;
   return {
     race: c.race.name, cls: c.cls.name, bg: c.bg.name,
     alignment: c.alignment, level: c.level, name: c.name,
     scores: c.scores, prof: c.prof, hp: c.hp, ac: c.ac,
     skills: c.skills, subclass: c.subclass, feats: c.feats || [],
+    expertise: c.expertise || [], extraSaves: c.extraSaves || [],
+    scoreParts: (withBreakdowns && c.scoreParts) ? Object.fromEntries(ABILS.map(a => [a, partsToStore(c.scoreParts[a])])) : null,
+    hpParts: withBreakdowns ? partsToStore(c.hpParts) : null,
     spellBlock: c.spellBlock ? {
       ability: c.spellBlock.ability, saveDC: c.spellBlock.saveDC,
       attackBonus: c.spellBlock.attackBonus, maxSpellLevel: c.spellBlock.maxSpellLevel,
@@ -8294,6 +8605,9 @@ function characterFromSharePayload(d){
     name: d.name, level: d.level, race, cls, bg, alignment: d.alignment,
     scores: d.scores, prof: d.prof, hp: d.hp, ac: d.ac, speed: race.speed,
     skills: d.skills, spellBlock: d.spellBlock, subclass: d.subclass, feats: d.feats || [],
+    expertise: d.expertise || [], extraSaves: d.extraSaves || [],
+    scoreParts: d.scoreParts ? Object.fromEntries(ABILS.map(a => [a, partsFromStore(d.scoreParts[a])])) : null,
+    hpParts: partsFromStore(d.hpParts),
     hook: d.hook, gold: d.gold, gear: d.gear, notes: d.notes || '',
     multiclass,
   };
@@ -8366,7 +8680,12 @@ function exportSheetAsPDF(containerId, filenameBase, buttonEl){
     margin: 0.4,
     filename: slugForFilename(filenameBase) + '.pdf',
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#EDE2C8' },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#EDE2C8',
+      // The PDF is for printing, so drop the "click a number" hint and underlines.
+      onclone: (doc) => {
+        doc.querySelectorAll('.calc-hint').forEach(el => el.remove());
+        doc.querySelectorAll('.calc-btn, .calc-box, .skill-tag').forEach(el => el.classList.add('calc-static'));
+      } },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
   };
 
@@ -10645,8 +10964,7 @@ function sendMonsterToTracker(m){
 }
 
 function sendCharacterToTracker(c){
-  const dexMod = mod(c.scores.dex);
-  const initiative = roll(20) + 1 + dexMod;
+  const initiative = roll(20) + 1 + sheetInitiative(c).total;
   combatants.push({
     id: nextCombatantId++,
     name: c.name, initiative, hp: c.hp, maxHp: c.hp, ac: c.ac || null,
@@ -11119,7 +11437,7 @@ function rollDisplayName(type, obj){
   return (HOARD_LABELS[obj.hoardKey]||'') + ' hoard, level ' + obj.level;
 }
 function rollPayload(type, obj){
-  if(type === 'character') return characterToSharePayload(obj);
+  if(type === 'character') return characterToSharePayload(obj, true);
   if(type === 'monster') return monsterToSharePayload(obj);
   if(type === 'encounter') return encounterToSharePayload(obj);
   return lootToSharePayload(obj);
