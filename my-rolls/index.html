@@ -460,7 +460,7 @@
     width:100%;
     max-width:1180px;
     display:flex;
-    gap: 6px;
+    gap: 4px;
     margin: 40px 0 24px;
   }
   .tab-bar[hidden]{ display:none; }
@@ -474,16 +474,9 @@
     white-space: nowrap;
     padding: 10px 14px 10px 0;
     margin-right: 6px;
-    align-self: center;
   }
   .tab-home:hover{ color: var(--cream-text); }
   .tab-home:focus-visible{ outline: 2px solid var(--cream-text); outline-offset: 2px; }
-  /* Mid-size screens (small laptops, tablets in landscape): tighten the nav so it stays on one line. */
-  @media (min-width: 1024px) and (max-width: 1180px){
-    .tab-bar{ gap: 2px; }
-    .tab-btn{ padding: 10px 9px; font-size: 13px; white-space: nowrap; }
-    .tab-home{ font-size: 14px; padding-right: 8px; margin-right: 2px; }
-  }
   .tab-btn{
     font-family:'Cinzel Decorative', serif;
     font-weight:700;
@@ -493,7 +486,8 @@
     border: none;
     border-bottom: 3px solid transparent;
     color: var(--cream-soft);
-    padding: 10px 18px;
+    padding: 10px 11px;
+    white-space: nowrap;
     cursor: pointer;
     text-decoration: none;
     transition: color 0.15s ease, border-color 0.15s ease;
@@ -543,7 +537,7 @@
   }
   .tab-dropdown-item:hover{ background: rgba(184,134,59,0.14); color: var(--cream-text); }
   .tab-dropdown-item.active{ background: rgba(212,168,92,0.18); color: var(--brass-bright); }
-  @media (max-width: 1023px){
+  @media (max-width: 1239px){
     .tab-dropdown-menu{
       display:flex;
       position:static;
@@ -597,16 +591,18 @@
   .account-btn[hidden]{ display:none; }
   .account-btn .account-signout-label{ display:none; }
   .account-btn.is-signed-in:hover .account-name-label{ display:none; }
+  .account-name-label{ display:inline-block; max-width: 72px; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom; }
   .account-btn.is-signed-in:hover .account-signout-label{ display:inline; }
 
   /* ---------- Mobile nav (hamburger + slide-out drawer) ---------- */
-  /* Hidden on desktop. Switches on below 1024px: the full nav bar needs
-     about 1,000px to fit on one line, so tablets get the drawer too.
+  /* Hidden on desktop. Switches on below 1240px: in the real nav font
+     (Cinzel Decorative) the full bar needs about 1,150px on one line, so
+     tablets and small windows get the drawer instead.
      (The rest of the layout still collapses at 860px.) */
   .mobile-nav-header{ display:none; }
   .nav-backdrop{ display:none; }
 
-  @media (max-width: 1023px){
+  @media (max-width: 1239px){
     .mobile-nav-header{
       display:flex;
       align-items:center;
