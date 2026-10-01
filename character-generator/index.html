@@ -455,6 +455,7 @@
     padding: 22px 22px 24px;
     cursor:pointer;
     transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+    text-decoration: none;
   }
   .landing-card:hover{ transform: translateY(-2px); border-color: var(--brass-bright); background: rgba(184,134,59,0.1); }
   .landing-card:focus-visible{ outline: 2px solid var(--cream-text); outline-offset: 2px; }
@@ -2360,10 +2361,10 @@
   <div class="landing-tools-page" id="landingToolsPage">
     <div class="landing-inner" style="margin-bottom:40px;">
       <div class="landing-grid" id="landingToolsSection">
-    <button type="button" class="landing-card" data-enter="character">
+    <a class="landing-card" href="/character-generator/">
       <span class="landing-card-name">Character Forge</span>
       <span class="landing-card-desc">Roll a full character sheet at any level.</span>
-    </button>
+    </a>
     <button type="button" class="landing-card" data-enter="monster">
       <span class="landing-card-name">Monster Forge</span>
       <span class="landing-card-desc">Generate a stat block by challenge rating.</span>
