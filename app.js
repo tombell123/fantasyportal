@@ -11419,9 +11419,16 @@ fbAuth.onAuthStateChanged((user) => {
   authReady = true;
   currentUser = user;
   updateAccountUI(user);
-  if(user) loadAccountProfile();
+  if(!user){
+    // Signed out: forget the last person's avatar and accent.
+    accountProfile = { avatarId: 'wizard', accentColor: 'brass' };
+    applyAccentColor('brass');
+  }
   if(!myrollsView.hidden) renderMyRollsList();
-  if(!accountView.hidden) renderAccountPage();
+  // Draw the account page only once the saved avatar/accent have loaded,
+  // otherwise it shows the defaults and looks like the choice wasn't kept.
+  const profileReady = user ? loadAccountProfile() : Promise.resolve();
+  profileReady.then(() => { if(!accountView.hidden) renderAccountPage(); });
 });
 
 function rollTypeLabel(type){
@@ -11626,8 +11633,13 @@ function loadAccountProfile(){
 function saveAccountProfile(patch){
   Object.assign(accountProfile, patch);
   if(!currentUser) return;
+  const status = document.getElementById('accountProfileStatus');
+  if(status) status.textContent = '';
   fbDb.collection('users').doc(currentUser.uid).collection('profile').doc('settings').set(accountProfile, { merge: true })
-    .catch((e) => console.error('Failed to save account profile', e));
+    .catch((e) => {
+      console.error('Failed to save account profile', e);
+      if(status) status.textContent = 'Couldn\u2019t save that choice. Try again in a moment.';
+    });
 }
 
 function applyAccentColor(accentId){
