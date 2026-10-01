@@ -549,6 +549,8 @@
     padding: 9px 12px;
     text-align:left;
     cursor: pointer;
+    text-decoration: none;
+    display: block;
   }
   .tab-dropdown-item:hover{ background: rgba(184,134,59,0.14); color: var(--cream-text); }
   .tab-dropdown-item.active{ background: rgba(212,168,92,0.18); color: var(--brass-bright); }
@@ -2412,7 +2414,7 @@
   <div class="tab-dropdown" id="generatorsDropdown">
     <button type="button" class="tab-btn tab-dropdown-toggle active" id="tabGenerators">Generators</button>
     <div class="tab-dropdown-menu">
-      <button type="button" class="tab-dropdown-item active" id="tabCharacter" data-tab="character">Character Forge</button>
+      <a class="tab-dropdown-item active" id="tabCharacter" href="/character-generator/">Character Forge</a>
       <button type="button" class="tab-dropdown-item" id="tabMonster" data-tab="monster">Monster Forge</button>
       <button type="button" class="tab-dropdown-item" id="tabLoot" data-tab="loot">Loot Table</button>
       <button type="button" class="tab-dropdown-item" id="tabEncounters" data-tab="encounters">Encounters</button>
