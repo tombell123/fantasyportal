@@ -11364,6 +11364,8 @@ const myrollsListContainer = document.getElementById('myrollsListContainer');
 
 let currentUser = null;
 let authReady = false;
+// Declared up here because the sign-in callback below can fire as soon as it's registered.
+let accountProfile = { avatarId: 'wizard', accentColor: 'brass' };
 
 function signInWithGoogle(){
   fbAuth.signInWithPopup(googleProvider).catch((e) => { console.error('Sign-in failed', e); });
@@ -11614,7 +11616,6 @@ const ACCOUNT_ACCENTS = [
   { id: 'frost', label: 'Frost', swatch: '#5B95BD' },
 ];
 
-let accountProfile = { avatarId: 'wizard', accentColor: 'brass' };
 
 function loadAccountProfile(){
   if(!currentUser) return Promise.resolve();
