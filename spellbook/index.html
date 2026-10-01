@@ -237,12 +237,14 @@
   .account-stat-card{ background: rgba(140,95,38,0.06); border:1px solid rgba(140,95,38,0.35); border-radius:10px; padding:14px; text-align:center; }
   .account-stat-num{ font-size:26px; font-weight:600; color: #8C5F26; line-height:1.1; }
   .account-stat-label{ font-size:12px; color: var(--ink-text-soft); margin-top:4px; }
+  /* Text fields inside a parchment sheet (e.g. the Journal title) need ink text
+     in both themes, matching the notes box beneath them. */
+  .sheet .tracker-input{ color: var(--ink-text); background: rgba(43,32,19,0.03); border-color: rgba(43,32,19,0.2); }
+  .sheet .tracker-input::placeholder{ color: var(--ink-text-soft); opacity: 0.8; }
   .journal-entry{ background: rgba(184,134,59,0.05); border:1px solid var(--rule); border-radius:8px; padding:12px 14px; margin-bottom:10px; cursor:pointer; }
   .journal-entry-title{ font-weight:600; margin:0 0 4px; }
-  .journal-entry-meta{ font-size:12px; color: var(--ink-text-soft); }
-  html:not([data-theme="light"]) .journal-entry-meta{ color: var(--cream-soft); }
+  .journal-entry-meta{ font-size:12px; color: var(--ink-text-soft); margin:0; font-style:italic; }
   .journal-entry-snippet{ font-size:13.5px; color: var(--ink-text-soft); margin-top:6px; }
-  html:not([data-theme="light"]) .journal-entry-snippet{ color: var(--cream-soft); }
   .myroll-star{ background:none; border:none; cursor:pointer; font-size:16px; line-height:1; padding:0 6px; color: var(--cream-soft); }
   .myroll-star.pinned{ color: var(--brass-bright); }
 

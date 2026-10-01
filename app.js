@@ -11724,6 +11724,23 @@ document.getElementById('accountAccentRow').addEventListener('click', (e) => {
 
 let journalEditingId = null;
 
+// Firestore timestamps -> "1 Oct 2026, 23:45" in the reader's own locale.
+function formatJournalDate(ts){
+  const d = ts && typeof ts.toDate === 'function' ? ts.toDate() : (ts ? new Date(ts) : null);
+  if(!d || isNaN(d)) return '';
+  return d.toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' }) + ', ' +
+    d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+}
+// "Written 1 Oct 2026, 23:45 · edited 3 Oct 2026, 10:02" (edited only if
+// changed more than a minute after it was written).
+function journalDateLine(d){
+  const created = formatJournalDate(d.createdAt);
+  const toMs = ts => ts && typeof ts.toMillis === 'function' ? ts.toMillis() : (ts ? +new Date(ts) : 0);
+  const edited = toMs(d.updatedAt) - toMs(d.createdAt) > 60000 ? formatJournalDate(d.updatedAt) : '';
+  if(!created) return edited ? 'Edited '+edited : '';
+  return 'Written '+created + (edited ? ' \u00b7 edited '+edited : '');
+}
+
 function renderJournalList(){
   if(!currentUser) return;
   const container = document.getElementById('journalListContainer');
@@ -11741,6 +11758,7 @@ function renderJournalList(){
         const snippet = content.slice(0, 120);
         html += '<div class="journal-entry" data-journal-id="'+doc.id+'">' +
           '<p class="journal-entry-title">'+escapeHtml(d.title || 'Untitled')+'</p>' +
+          (journalDateLine(d) ? '<p class="journal-entry-meta">'+journalDateLine(d)+'</p>' : '') +
           '<p class="journal-entry-snippet">'+escapeHtml(snippet)+(content.length > 120 ? '…' : '')+'</p>' +
         '</div>';
       });
@@ -11752,11 +11770,12 @@ function renderJournalList(){
     });
 }
 
-function openJournalEditor(id, title, content){
+function openJournalEditor(id, title, content, dateLine){
   journalEditingId = id || null;
   const editor = document.getElementById('journalEditorContainer');
   editor.innerHTML =
     '<div style="margin-bottom:14px;">' +
+      (dateLine ? '<p class="journal-entry-meta" style="margin:0 0 8px;">'+dateLine+'</p>' : '') +
       '<input type="text" id="journalTitleInput" class="tracker-input" placeholder="Entry title" style="width:100%;margin-bottom:8px;" value="'+escapeHtml(title || '')+'" maxlength="80">' +
       '<textarea class="character-notes" id="journalContentInput" placeholder="Write your notes…" style="min-height:140px;">'+escapeHtml(content || '')+'</textarea>' +
       '<div style="display:flex;gap:8px;margin-top:8px;">' +
@@ -11784,7 +11803,7 @@ document.getElementById('journalListContainer').addEventListener('click', (e) =>
   fbDb.collection('users').doc(currentUser.uid).collection('journal').doc(id).get().then((doc) => {
     if(!doc.exists) return;
     const d = doc.data();
-    openJournalEditor(id, d.title, d.content);
+    openJournalEditor(id, d.title, d.content, journalDateLine(d));
   }).catch((e) => console.error('Failed to load journal entry', e));
 });
 
