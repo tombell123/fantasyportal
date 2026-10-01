@@ -8431,7 +8431,7 @@ function openAccountTab(){
     document.getElementById('accountStatsGrid').innerHTML = '<p style="color:var(--ink-text-soft);">Checking your account…</p>';
     return;
   }
-  if(!currentUser){ signInWithGoogle(); return; }
+  // Signed out: show the sign-in prompt rather than opening a popup the browser would block.
   renderAccountPage();
 }
 
@@ -10929,8 +10929,13 @@ signOutConfirmBtn.addEventListener('click', () => { signOutOfAccount(); closeSig
 
 document.getElementById('accountSignOutBtn').addEventListener('click', openSignOutConfirm);
 
-accountBtnLanding.addEventListener('click', () => { currentUser ? enterSite('account') : signInWithGoogle(); });
-accountBtnBar.addEventListener('click', () => { currentUser ? openAccountTab() : signInWithGoogle(); });
+// My Account lives at /account/. From any other page, go there; on it, just re-render.
+function goToAccount(){
+  if(location.pathname === '/account/') openAccountTab();
+  else location.href = '/account/';
+}
+accountBtnLanding.addEventListener('click', () => { currentUser ? goToAccount() : signInWithGoogle(); });
+accountBtnBar.addEventListener('click', () => { currentUser ? goToAccount() : signInWithGoogle(); });
 myrollsSignInBtn.addEventListener('click', signInWithGoogle);
 
 fbAuth.onAuthStateChanged((user) => {
@@ -11166,7 +11171,18 @@ function accountStatCard(num, label){
 }
 
 function renderAccountPage(){
-  if(!currentUser) return;
+  document.getElementById('accountView').classList.toggle('signed-out', !currentUser);
+  if(!currentUser){
+    // Signed out (e.g. a direct visit to /account/, or after signing out here).
+    document.getElementById('accountDisplayName').textContent = 'Adventurer';
+    document.getElementById('accountStatsGrid').innerHTML =
+      '<div class="account-signin-prompt"><p>Sign in to see your stats, journal, and profile.</p>' +
+      '<button type="button" class="toolbar-btn" id="accountSignInPromptBtn">Sign in with Google</button></div>';
+    document.getElementById('accountSignInPromptBtn').addEventListener('click', signInWithGoogle);
+    closeJournalEditor();
+    document.getElementById('journalListContainer').innerHTML = '';
+    return;
+  }
   document.getElementById('accountDisplayName').textContent = currentUser.displayName ? currentUser.displayName.split(' ')[0] : 'Adventurer';
   document.getElementById('accountAvatarBig').textContent = (ACCOUNT_AVATARS.find(a => a.id === accountProfile.avatarId) || ACCOUNT_AVATARS[0]).icon;
 
