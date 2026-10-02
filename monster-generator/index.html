@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Free D&D 5e Monster Generator | Monster Forge — Fantasy Portal</title>
-<meta name="description" content="Generate a complete D&amp;D 5th Edition monster stat block by challenge rating: AC, HP, speed, abilities, saving throws, skills, traits, and actions for any of 137 creatures, from a rat to the Tarrasque. Free, no sign-up, works entirely in your browser.">
+<meta name="description" content="Generate a complete D&amp;D 5th Edition monster stat block by challenge rating: AC, HP, speed, abilities, saving throws, skills, traits, and actions for any of 207 creatures, from a giant rat to the Tarrasque. Free, no sign-up, works entirely in your browser.">
 <link rel="canonical" href="https://fantasy-portal.com/monster-generator/">
 
 <meta property="og:type" content="website">
@@ -33,7 +33,7 @@
   "@type": "WebApplication",
   "name": "Monster Forge",
   "url": "https://fantasy-portal.com/monster-generator/",
-  "description": "A free D&D 5th Edition monster generator: rolls a complete stat block for any of 137 creatures by challenge rating.",
+  "description": "A free D&D 5th Edition monster generator: rolls a complete stat block for any of 207 creatures by challenge rating.",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Any (runs in browser)",
   "isPartOf": {
@@ -1640,6 +1640,18 @@
   .sheet a:not([class]):hover, .modal-panel a:not([class]):hover{ color: var(--accent-ink-deep); }
   .privacy-body a:not([class]){ color: var(--sigil-red); }
 
+  .rules-edition{
+    display:inline-block;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cream-soft);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 2px 9px;
+    margin: 4px 0 14px;
+  }
   .tool-about{
     grid-column: 1 / -1;
     max-width: 760px;
@@ -2484,7 +2496,7 @@
         </svg>
       </div>
       <h1 class="landing-title">Fantasy Portal<button type="button" class="landing-splash" data-enter="dungeon">Try Dungeon Run!</button></h1>
-      <p class="landing-tagline">Roll it, run it, play it: the only free 5e toolkit with a built-in permadeath roguelike.</p>
+      <p class="landing-tagline">Roll it, run it, play it: a free 5e toolkit with a built-in permadeath roguelike.</p>
 
       <button type="button" class="scroll-cue pulse" id="scrollCueBtn" aria-label="Scroll down to the tools">
         <div class="scroll-cue-pulse-ring" aria-hidden="true">
@@ -2590,6 +2602,7 @@
     <p class="brand-eyebrow">Character Forge</p>
     <h2 class="brand-title">The Forge</h2>
     <p class="brand-sub">Choose a level, and optionally a race or class. Everything else, spells, gear, and more, is drawn for you.</p>
+    <p class="rules-edition" title="These tools follow the 2014 5th Edition rules (Player's Handbook, Dungeon Master's Guide, Monster Manual).">D&amp;D 5e &middot; 2014 rules</p>
 
     <div class="level-block">
       <div class="level-label">
@@ -2677,8 +2690,9 @@
 <div class="app" id="monsterView" hidden>
   <aside class="rail">
     <h1 class="brand-eyebrow">Free D&amp;D 5e Monster Generator</h1>
-    <h2 class="brand-title">The Bestiary</h2>
+    <h2 class="brand-title">The Lair</h2>
     <p class="brand-sub">Pick a threat tier. Strike the seal. Full stat block, actions and all.</p>
+    <p class="rules-edition" title="These tools follow the 2014 5th Edition rules (Player's Handbook, Dungeon Master's Guide, Monster Manual).">D&amp;D 5e &middot; 2014 rules</p>
 
     <div class="lock-block" style="margin-top:0; padding-top:0; border-top:none;">
       <p class="lock-heading">Threat tier</p>
@@ -2733,7 +2747,7 @@
     </div>
 
     <div class="rail-footer">
-      137 creatures across every challenge tier, from rats to the Tarrasque, each with a full stat block: AC, HP, speed, abilities, traits, and actions.
+      207 creatures across every challenge tier, from giant rats to the Tarrasque, each with a full stat block: AC, HP, speed, abilities, traits, and actions.
     </div>
   </aside>
 
@@ -2749,14 +2763,14 @@
 
   <section class="tool-about">
     <h3>About Monster Forge</h3>
-    <p>Monster Forge pulls a full 5th Edition stat block from a library of 137 creatures, spanning every challenge rating from a common rat right up to the Tarrasque. Each one comes with armor class, hit points, speed, ability scores, saving throws, skills, traits, and actions, exactly as you'd find in a stat block from the Monster Manual.</p>
+    <p>Monster Forge pulls a full 5th Edition stat block from a library of 207 creatures, spanning every challenge rating from a common rat right up to the Tarrasque. Each one comes with armor class, hit points, speed, ability scores, saving throws, skills, traits, and actions, exactly as you'd find in a stat block from the Monster Manual.</p>
     <p>It's aimed at Dungeon Masters running an encounter on short notice, whether that's a monster the party stumbles into outside a planned fight or a stat block you need pulled up fast mid-session. Pick a threat tier that roughly matches your party's level, strike the seal, and you get a creature ready to drop straight into the fight.</p>
     <h4>A few common questions</h4>
     <p><strong>How do I pick the right threat tier for my party?</strong> Start from your party&rsquo;s level: for four characters, a single monster with a challenge rating close to their level is roughly a medium fight. For example, four level 5 characters would find a CR 5 monster a fair fight, so pick Low (CR 2&ndash;5). For a tougher boss, step up to Mid (CR 6&ndash;10), where a CR 8 is a hard fight and a CR 9 is deadly. If you&rsquo;re using several monsters at once, step down a tier, since numbers make a fight harder. For an exact difficulty for your party, use <a href="/encounter-generator/">Encounters</a>.</p>
     <p><strong>How are the threat tiers grouped?</strong> Monsters are split into five tiers by challenge rating, so you can roll something that actually fits the encounter rather than getting a random spread across every difficulty.</p>
     <p><strong>Can I see a monster's full stat block, not just a summary?</strong> Yes. Every roll gives you the complete block, including all of its actions, not a shortened version.</p>
     <p><strong>Is this useful outside of combat?</strong> It works well for quickly reading a creature's traits and lore hooks too, not just its numbers, if you want a monster for a scene rather than a fight.</p>
-    <p>Monster Forge is one tool in <a href="https://fantasy-portal.com/">Fantasy Portal</a>, a free D&amp;D 5e toolkit that also includes <a href="/character-generator/">Character Forge</a>, a <a href="/loot-generator/">Loot Table</a>, <a href="/encounter-generator/">Encounters</a>, a 370-spell <a href="/spellbook/">Spellbook</a>, a 137-creature <a href="/bestiary/">Bestiary</a>, an <a href="/initiative-tracker/">Initiative Tracker</a>, and <a href="/dungeon-run/">Dungeon Run</a>, a permadeath roguelike.</p>
+    <p>Monster Forge is one tool in <a href="https://fantasy-portal.com/">Fantasy Portal</a>, a free D&amp;D 5e toolkit that also includes <a href="/character-generator/">Character Forge</a>, a <a href="/loot-generator/">Loot Table</a>, <a href="/encounter-generator/">Encounters</a>, a 405-spell <a href="/spellbook/">Spellbook</a>, a 237-creature <a href="/bestiary/">Bestiary</a>, an <a href="/initiative-tracker/">Initiative Tracker</a>, and <a href="/dungeon-run/">Dungeon Run</a>, a permadeath roguelike.</p>
   </section>
 </div>
 
@@ -2765,6 +2779,7 @@
     <p class="brand-eyebrow">Loot Table</p>
     <h2 class="brand-title">The Hoard</h2>
     <p class="brand-sub">Set a party level and a hoard size. Strike the seal for gold and magic items, scaled to match.</p>
+    <p class="rules-edition" title="These tools follow the 2014 5th Edition rules (Player's Handbook, Dungeon Master's Guide, Monster Manual).">D&amp;D 5e &middot; 2014 rules</p>
 
     <div class="level-block">
       <div class="level-label">
@@ -2847,6 +2862,7 @@
     <p class="brand-eyebrow">Encounters</p>
     <h2 class="brand-title">The Ambush</h2>
     <p class="brand-sub">Set your party's size, level, and how rough you want it, then strike the seal.</p>
+    <p class="rules-edition" title="These tools follow the 2014 5th Edition rules (Player's Handbook, Dungeon Master's Guide, Monster Manual).">D&amp;D 5e &middot; 2014 rules</p>
 
     <div class="level-block">
       <div class="level-label">
@@ -2942,7 +2958,7 @@
     <p>Encounters builds a combat encounter using the actual 5th Edition encounter-building rules from the Dungeon Master's Guide: party XP thresholds by level, adjusted by a multiplier for how many creatures are involved. Set your party's size, average level, and how hard you want the fight to be, and it works out a monster lineup that lands close to that difficulty.</p>
     <p>Recent updates cap how many of the same creature can appear, so a large encounter comes back with a genuine mix of monsters rather than the same one repeated many times over. There's also an option to include a short flavor hook, giving you a scene to introduce the fight with, rather than a plain list of monsters and nothing else.</p>
     <h4>A few common questions</h4>
-    <p><strong>How accurate is the difficulty rating?</strong> It follows the same XP threshold math the Dungeon Master's Guide uses, so an encounter marked hard should genuinely play out as a hard fight for that party.</p>
+    <p><strong>How accurate is the difficulty rating?</strong> It uses the same XP thresholds and monster-count multipliers as the 2014 Dungeon Master's Guide, so it's a good guide, but it's an estimate. Your party's classes, magic items and tactics, and the terrain, can make a fight easier or harder than the numbers suggest.</p>
     <p><strong>Can I get just monsters, without the flavor text?</strong> Yes, the stat blocks only option skips the hook and gives you the encounter on its own.</p>
     <p><strong>Can I send the result straight into combat?</strong> Yes, use the Send to Tracker button on a rolled encounter to load every monster into the Initiative Tracker, initiative already rolled.</p>
   </section>
@@ -2953,6 +2969,7 @@
     <p class="brand-eyebrow">Spellbook</p>
     <h2 class="brand-title">The Grimoire</h2>
     <p class="brand-sub">Search for a spell by name, or browse the full list by level.</p>
+    <p class="rules-edition" title="These tools follow the 2014 5th Edition rules (Player's Handbook, Dungeon Master's Guide, Monster Manual).">D&amp;D 5e &middot; 2014 rules</p>
 
     <div class="level-block" style="margin-top:0;">
       <label for="spellSearchInput" class="lock-heading" style="display:block;">Jump to a spell</label>
@@ -3008,7 +3025,7 @@
     </div>
 
     <div class="rail-footer" id="spellbookCount">
-      370 spells on file. Click any spell to see its full details: casting time, range, components, duration, and effect.
+      405 spells on file. Click any spell to see its full details: casting time, range, components, duration, and effect.
     </div>
   </aside>
 
@@ -3018,7 +3035,7 @@
 
   <section class="tool-about">
     <h3>About Spellbook</h3>
-    <p>Spellbook holds all 370 core 5th Edition spells, from cantrips through 9th level, searchable by name and filterable by both spell level and class. Click any spell to open its full entry: casting time, range, components, duration, and the complete effect text, the same information you'd find on a spell's page in the Player's Handbook.</p>
+    <p>Spellbook holds 405 spells from 5th Edition, from cantrips through 9th level, searchable by name and filterable by both spell level and class. Click any spell to open its full entry: casting time, range, components, duration, and the complete effect text, the same information you'd find on a spell's page in the Player's Handbook.</p>
     <p>It's meant for the moment mid-session when you need to check exactly what a spell does, whether that's confirming a player's cast, looking up range or duration on the fly, or browsing what a class has available at a given level while building a character.</p>
     <h4>A few common questions</h4>
     <p><strong>Can I filter by class and level at the same time?</strong> Yes, both filters apply together, so you can narrow the list to, for example, only Wizard spells at 3rd level.</p>
@@ -3032,6 +3049,7 @@
     <p class="brand-eyebrow">Bestiary</p>
     <h2 class="brand-title">The Compendium</h2>
     <p class="brand-sub">Search for a creature by name, or browse the full list by type.</p>
+    <p class="rules-edition" title="These tools follow the 2014 5th Edition rules (Player's Handbook, Dungeon Master's Guide, Monster Manual).">D&amp;D 5e &middot; 2014 rules</p>
 
     <div class="level-block" style="margin-top:0;">
       <label for="bestiarySearchInput" class="lock-heading" style="display:block;">Jump to a creature</label>
@@ -3060,7 +3078,7 @@
     </div>
 
     <div class="rail-footer" id="bestiaryCount">
-      137 creatures on file. Click any creature to see its full stat block.
+      237 creatures on file. Click any creature to see its full stat block.
     </div>
   </aside>
 
@@ -3184,6 +3202,7 @@
     </div>
     <h2 class="brand-title">The Descent</h2>
     <p class="brand-sub">A single-player crawl using real 5e turn-based combat. Every run starts fresh at level 1 — pick a class to begin.</p>
+    <p class="rules-edition" title="These tools follow the 2014 5th Edition rules (Player's Handbook, Dungeon Master's Guide, Monster Manual).">D&amp;D 5e &middot; 2014 rules</p>
 
     <div class="level-block" id="dungeonClassPickerBlock" style="margin-top:0;">
       <p class="lock-heading">Choose your class</p>
