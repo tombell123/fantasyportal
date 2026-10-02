@@ -9357,10 +9357,6 @@ function renderDungeonRunState(){
     : '<p style="margin-top:12px; color:var(--ink-text-soft); font-size:14px;">No items carried.</p>';
 
   dungeonMainContent.innerHTML =
-    '<div class="sheet-toolbar">' +
-      '<button type="button" class="toolbar-btn" id="dungeonBeginFightBtn">Continue</button>' +
-      '<button type="button" class="toolbar-btn" id="dungeonShopBtn">Shop</button>' +
-    '</div>' +
     '<div class="sheet">' +
       '<h3 style="margin-top:0;">' + c.name + '</h3>' +
       '<p style="color:var(--ink-text-soft);">Level ' + run.runLevel + ' ' + c.race.name + ' ' + c.cls.name + '</p>' +
@@ -9373,6 +9369,10 @@ function renderDungeonRunState(){
       equipmentHtml +
       '<h4 style="margin-bottom:4px;">Inventory</h4>' +
       inventoryHtml +
+    '</div>' +
+    '<div class="dungeon-choices">' +
+      '<button type="button" class="toolbar-btn dungeon-choice-primary" id="dungeonBeginFightBtn">Continue</button>' +
+      '<button type="button" class="toolbar-btn" id="dungeonShopBtn">Shop</button>' +
     '</div>';
 
   document.getElementById('dungeonBeginFightBtn').addEventListener('click', openDungeonPathChoiceModal);
@@ -9781,16 +9781,16 @@ function renderDungeonEncounterPreview(){
   const m = pendingEncounterMonster;
 
   dungeonMainContent.innerHTML =
-    '<div class="sheet-toolbar">' +
-      '<button type="button" class="toolbar-btn" id="dungeonFightBtn">Fight</button>' +
-      '<button type="button" class="toolbar-btn" id="dungeonRetreatBtn">Turn back</button>' +
-    '</div>' +
     '<div class="sheet">' +
       '<h3 style="margin-top:0;">' + escapeHtml(m.name) + '</h3>' +
       '<p style="color:var(--ink-text-soft);">' + escapeHtml(m.size||'') + ' ' + escapeHtml(m.type||'') + ', ' + escapeHtml(m.alignment||'') + '</p>' +
       '<div class="core-stats" style="margin-top:16px;">' +
         '<div class="core-stat"><span class="cs-label">Hit Points</span><span class="cs-value">' + m.hp + '</span></div>' +
       '</div>' +
+    '</div>' +
+    '<div class="dungeon-choices">' +
+      '<button type="button" class="toolbar-btn dungeon-choice-primary" id="dungeonFightBtn">Fight</button>' +
+      '<button type="button" class="toolbar-btn" id="dungeonRetreatBtn">Turn back</button>' +
     '</div>';
 
   document.getElementById('dungeonFightBtn').addEventListener('click', beginDungeonEncounter);
@@ -10434,14 +10434,14 @@ function renderDungeonShop(){
   }).join('');
 
   dungeonMainContent.innerHTML =
-    '<div class="sheet-toolbar">' +
-      '<button type="button" class="toolbar-btn" id="dungeonLeaveShopBtn">Leave shop</button>' +
-    '</div>' +
     '<div class="sheet">' +
       '<h3 style="margin-top:0;">Shop</h3>' +
       '<p style="color:var(--ink-text-soft);">You have ' + run.runGold + ' gold. New stock arrives after your next fight.</p>' +
       '<p style="margin-top:8px; font-size:14px;"><strong>Currently wearing:</strong> ' + currentArmorLine + '</p>' +
       (rows ? '<div class="core-stats" style="margin-top:16px;">' + rows + '</div>' : '<p style="color:var(--ink-text-soft);">Nothing in stock right now.</p>') +
+    '</div>' +
+    '<div class="dungeon-choices">' +
+      '<button type="button" class="toolbar-btn dungeon-choice-primary" id="dungeonLeaveShopBtn">Leave shop</button>' +
     '</div>';
 
   Array.from(document.querySelectorAll('.dungeon-buy-tile')).forEach(btn => {
@@ -10520,14 +10520,14 @@ async function finishDungeonCombat(outcome){
 function renderDungeonVictoryScreen(loot, levelUpResult){
   const run = currentDungeonRun;
   dungeonMainContent.innerHTML =
-    '<div class="sheet-toolbar">' +
-      '<button type="button" class="toolbar-btn" id="dungeonContinueBtn">Continue</button>' +
-    '</div>' +
     '<div class="sheet">' +
       '<h3 style="margin-top:0;">Victory</h3>' +
       '<p style="color:var(--ink-text-soft);">You found ' + loot.gold + ' gold' + (loot.items.length ? ' and ' + loot.items.length + ' item' + (loot.items.length>1?'s':'') + ':' : '.') + '</p>' +
       (loot.items.length ? '<div>' + loot.items.map(it => '<span class="tag" style="margin:2px 4px 2px 0; display:inline-block;">' + escapeHtml(it.name) + '</span>').join('') + '</div>' : '') +
       (levelUpResult ? '<p style="margin-top:16px; color:var(--ink-text-soft);">You reach level ' + run.runLevel + '! +' + levelUpResult.hpGained + ' HP' + (levelUpResult.spellTierUnlocked ? ', new spells unlocked' : '') + '.' + (levelUpResult.bossLevel ? ' A powerful presence awaits at the bottom of the dungeon.' : '') + '</p>' : '') +
+    '</div>' +
+    '<div class="dungeon-choices">' +
+      '<button type="button" class="toolbar-btn dungeon-choice-primary" id="dungeonContinueBtn">Continue</button>' +
     '</div>';
   document.getElementById('dungeonContinueBtn').addEventListener('click', renderDungeonRunState);
 }
@@ -10536,12 +10536,12 @@ function renderDungeonDeathScreen(){
   const run = currentDungeonRun;
   const c = run.characterSnapshot;
   dungeonMainContent.innerHTML =
-    '<div class="sheet-toolbar">' +
-      '<button type="button" class="toolbar-btn" id="dungeonNewRunBtn">Start a new run</button>' +
-    '</div>' +
     '<div class="sheet">' +
       '<h3 style="margin-top:0;">' + escapeHtml(c.name) + ' has fallen</h3>' +
       '<p style="color:var(--ink-text-soft);">Level ' + run.runLevel + ' ' + c.cls.name + ' \u2014 the run ends here. Death is permanent in this mode.</p>' +
+    '</div>' +
+    '<div class="dungeon-choices">' +
+      '<button type="button" class="toolbar-btn dungeon-choice-primary" id="dungeonNewRunBtn">Start a new run</button>' +
     '</div>';
   document.getElementById('dungeonNewRunBtn').addEventListener('click', showDungeonClassPicker);
 }

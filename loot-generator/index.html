@@ -1287,6 +1287,13 @@
   }
   .toolbar-btn:hover{ background: rgba(var(--accent-rgb),0.18); border-color: var(--brass-bright); }
   .toolbar-btn:focus-visible{ outline: 2px solid var(--cream-text); outline-offset: 2px; }
+  /* Dungeon Run choices sit under the card (read the situation, then decide);
+     the main choice is filled so it reads as the next step. */
+  .dungeon-choices{ display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  .dungeon-choices .toolbar-btn{ font-size:14px; padding:10px 18px; }
+  /* .toolbar-btn in the selector so this beats the light theme's toolbar-btn rule. */
+  .dungeon-choices .toolbar-btn.dungeon-choice-primary{ background: var(--brass-bright); border-color: var(--brass-bright); color: var(--ink); font-weight:600; }
+  .dungeon-choices .toolbar-btn.dungeon-choice-primary:hover{ background: var(--cream-text); border-color: var(--cream-text); }
   /* Toolbar buttons placed inside a parchment card (e.g. the Journal)
      need dark ink text in both themes. */
   .sheet .toolbar-btn{ background: rgba(43,32,19,0.04); border-color: rgba(var(--accent-ink-rgb),0.4); color: var(--ink-text); }
