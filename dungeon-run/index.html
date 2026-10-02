@@ -2536,73 +2536,9 @@
       <span>Light mode</span>
     </button>
     <button type="button" class="account-btn landing-account-btn" id="accountBtnLanding"><span class="account-name-label">Sign in</span><span class="account-signout-label">My Account</span></button>
-    <div class="landing-hero">
-      <div class="landing-brand">
-        <div class="landing-glyph">
-          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="50,4 93,28 93,72 50,96 7,72 7,28" fill="none" stroke="var(--brass)" stroke-width="2"/>
-            <polygon points="50,6 90,30 50,36 10,30" fill="rgba(255,255,255,0.15)" stroke="var(--brass-bright)" stroke-width="2.5" stroke-linejoin="round"/>
-            <polygon points="10,70 50,64 90,70 50,94" fill="rgba(43,32,19,0.25)" stroke="var(--brass-bright)" stroke-width="2.5" stroke-linejoin="round"/>
-            <polygon points="10,30 50,36 90,30 90,70 50,64 10,70" fill="none" stroke="var(--brass-bright)" stroke-width="2.5" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="landing-title">Fantasy Portal</div>
-      </div>
-      <p class="landing-headline">Your players went off-script.<br>Keep the game moving.</p>
-      <p class="landing-sub">Characters, encounters, monsters and loot for D&amp;D 5e (2014 rules), ready in one click. Send monsters straight into the initiative tracker and run the fight.</p>
-      <div class="landing-ctas">
-        <a class="landing-cta landing-cta-primary" href="/encounter-generator/">Build an encounter</a>
-        <a class="landing-cta" href="/character-generator/">Create a character</a>
-      </div>
-      <a class="landing-solo" href="/dungeon-run/">No group tonight? Play <b>Dungeon Run</b>, a solo permadeath dungeon crawl &rarr;</a>
-      <p class="landing-trust">Free, no paywalls. Sign in only if you want to save your rolls.</p>
-    </div>
+    <div class="landing-hero"></div>
   </div>
-
-  <div class="landing-tools-page" id="landingToolsPage">
-    <div class="landing-inner" style="margin-bottom:40px;">
-      <h2 class="landing-tools-heading">Every tool</h2>
-      <div class="landing-grid" id="landingToolsSection">
-    <a class="landing-card" href="/character-generator/">
-      <span class="landing-card-name">Character Forge</span>
-      <span class="landing-card-desc">Roll a full character sheet at any level.</span>
-    </a>
-    <a class="landing-card" href="/monster-generator/">
-      <span class="landing-card-name">Monster Forge</span>
-      <span class="landing-card-desc">Generate a stat block by challenge rating.</span>
-    </a>
-    <a class="landing-card" href="/loot-generator/">
-      <span class="landing-card-name">Loot Table</span>
-      <span class="landing-card-desc">Crack open a hoard scaled to your party.</span>
-    </a>
-    <a class="landing-card" href="/spellbook/">
-      <span class="landing-card-name">Spellbook</span>
-      <span class="landing-card-desc">Search every spell, cantrip to 9th level.</span>
-    </a>
-    <a class="landing-card" href="/bestiary/">
-      <span class="landing-card-name">Bestiary</span>
-      <span class="landing-card-desc">Look up any creature’s full stat block by name.</span>
-    </a>
-    <a class="landing-card" href="/encounter-generator/">
-      <span class="landing-card-name">Encounters</span>
-      <span class="landing-card-desc">Generate a balanced fight, with a hook if you want one.</span>
-    </a>
-    <a class="landing-card" href="/initiative-tracker/">
-      <span class="landing-card-name">Initiative Tracker</span>
-      <span class="landing-card-desc">Track turn order, HP, and conditions during combat.</span>
-    </a>
-    <a class="landing-card" href="/my-rolls/">
-      <span class="landing-card-name">My Rolls</span>
-      <span class="landing-card-desc">Sign in to save characters, monsters, and loot.</span>
-    </a>
-    <a class="landing-card" href="/about/">
-      <span class="landing-card-name">About Me</span>
-      <span class="landing-card-desc">Who's behind this site, and why it exists.</span>
-    </a>
-  </div>
-
-  </div>
-  </div>
+  <div class="landing-tools-page" id="landingToolsPage"></div>
 </div>
 
 <div class="mobile-nav-header" id="mobileNavHeader" hidden>
@@ -2724,15 +2660,6 @@
     </div>
   </main>
 
-  <section class="tool-about">
-    <h3>About Character Forge</h3>
-    <p>Character Forge builds a complete, ready-to-play Dungeons &amp; Dragons 5th Edition character in one click, at any level from 1 to 20. If you need a full character right now instead of working through the Player's Handbook step by step, this handles it: pulling up a quick NPC mid-session, generating a pre-made character for a one-shot, or just seeing a build you hadn't thought of.</p>
-    <p>Each roll works through the same steps you'd normally do by hand. It picks a race and class, assigns ability scores, works out hit points and armor class, chooses skills and spells where they apply, puts together starting gear, and rolls up a background with a personality hook. All of it scales properly to the level you've chosen, including class features gained along the way. Leave race and class open to see what the dice give you, or set either one if you already have something in mind.</p>
-    <h4>A few common questions</h4>
-    <p><strong>Can I lock part of a character in and reroll the rest?</strong> Yes. Background and alignment can be locked before you strike the seal again, so you keep the parts you like while rerolling everything else.</p>
-    <p><strong>Does it follow the official rules?</strong> Character Forge currently uses the 2014 5th Edition ruleset (Player's Handbook, Dungeon Master's Guide, Monster Manual). A toggle for the 2024 revised rules is planned for a future update.</p>
-    <p><strong>Can I save characters I like?</strong> Sign in with My Rolls to keep a history of everything you've forged, so you can come back to a character later.</p>
-  </section>
 </div>
 
 <div class="app" id="monsterView" hidden>
@@ -2809,16 +2736,6 @@
     </div>
   </main>
 
-  <section class="tool-about">
-    <h3>About Monster Forge</h3>
-    <p>Monster Forge pulls a full 5th Edition stat block from a library of 207 creatures, spanning every challenge rating from a common rat right up to the Tarrasque. Each one comes with armor class, hit points, speed, ability scores, saving throws, skills, traits, and actions, exactly as you'd find in a stat block from the Monster Manual.</p>
-    <p>It's aimed at Dungeon Masters running an encounter on short notice, whether that's a monster the party stumbles into outside a planned fight or a stat block you need pulled up fast mid-session. Pick a threat tier that roughly matches your party's level, strike the seal, and you get a creature ready to drop straight into the fight.</p>
-    <h4>A few common questions</h4>
-    <p><strong>How do I pick the right threat tier for my party?</strong> Start from your party&rsquo;s level: for four characters, a single monster with a challenge rating close to their level is roughly a medium fight. For example, four level 5 characters would find a CR 5 monster a fair fight, so pick Low (CR 2&ndash;5). For a tougher boss, step up to Mid (CR 6&ndash;10), where a CR 8 is a hard fight and a CR 9 is deadly. If you&rsquo;re using several monsters at once, step down a tier, since numbers make a fight harder. For an exact difficulty for your party, use <a href="/encounter-generator/">Encounters</a>.</p>
-    <p><strong>How are the threat tiers grouped?</strong> Monsters are split into five tiers by challenge rating, so you can roll something that actually fits the encounter rather than getting a random spread across every difficulty.</p>
-    <p><strong>Can I see a monster's full stat block, not just a summary?</strong> Yes. Every roll gives you the complete block, including all of its actions, not a shortened version.</p>
-    <p><strong>Is this useful outside of combat?</strong> It works well for quickly reading a creature's traits and lore hooks too, not just its numbers, if you want a monster for a scene rather than a fight.</p>
-  </section>
 </div>
 
 <div class="app" id="lootView" hidden>
@@ -2893,15 +2810,6 @@
     </div>
   </main>
 
-  <section class="tool-about">
-    <h3>About Loot Table</h3>
-    <p>Loot Table rolls a full treasure hoard scaled to your party's level: coin, mundane trade goods, and magic items drawn from the same rarity tiers used in Character Forge. A level 1 party pulls common finds and modest gold, while a high level hoard can turn up rare or even legendary items alongside a much larger pile of coin.</p>
-    <p>It's built for the moment after a fight or a dungeon room, when you need to know what's actually in the chest without working out gold values and rarity by hand. Pick a level and a hoard size, from a small stash up to a huge vault, and strike the seal for a complete result.</p>
-    <h4>A few common questions</h4>
-    <p><strong>What decides how good the loot is?</strong> Both the level you set and the hoard size affect the outcome. Level controls which rarity tiers are in play, and hoard size controls how much of everything you get.</p>
-    <p><strong>Will I always get a magic item?</strong> Not at very low levels, where a hoard might just be coin and mundane gear. From level 2 upward you'll typically see at least one magic item included.</p>
-    <p><strong>Can I reroll just to see other results at the same settings?</strong> Yes, striking the seal again at the same level and hoard size gives you a fresh roll each time.</p>
-  </section>
 </div>
 
 <div class="app" id="encountersView" hidden>
@@ -3000,15 +2908,6 @@
     </div>
   </main>
 
-  <section class="tool-about">
-    <h3>About Encounters</h3>
-    <p>Encounters builds a combat encounter using the actual 5th Edition encounter-building rules from the Dungeon Master's Guide: party XP thresholds by level, adjusted by a multiplier for how many creatures are involved. Set your party's size, average level, and how hard you want the fight to be, and it works out a monster lineup that lands close to that difficulty.</p>
-    <p>Recent updates cap how many of the same creature can appear, so a large encounter comes back with a genuine mix of monsters rather than the same one repeated many times over. There's also an option to include a short flavor hook, giving you a scene to introduce the fight with, rather than a plain list of monsters and nothing else.</p>
-    <h4>A few common questions</h4>
-    <p><strong>How accurate is the difficulty rating?</strong> It uses the same XP thresholds and monster-count multipliers as the 2014 Dungeon Master's Guide, so it's a good guide, but it's an estimate. Your party's classes, magic items and tactics, and the terrain, can make a fight easier or harder than the numbers suggest.</p>
-    <p><strong>Can I get just monsters, without the flavor text?</strong> Yes, the stat blocks only option skips the hook and gives you the encounter on its own.</p>
-    <p><strong>Can I send the result straight into combat?</strong> Yes, use the Send to Tracker button on a rolled encounter to load every monster into the Initiative Tracker, initiative already rolled.</p>
-  </section>
 </div>
 
 <div class="app" id="spellbookView" hidden>
@@ -3080,15 +2979,6 @@
     <div id="spellbookListContainer"></div>
   </main>
 
-  <section class="tool-about">
-    <h3>About Spellbook</h3>
-    <p>Spellbook holds 405 spells from 5th Edition, from cantrips through 9th level, searchable by name and filterable by both spell level and class. Click any spell to open its full entry: casting time, range, components, duration, and the complete effect text, the same information you'd find on a spell's page in the Player's Handbook.</p>
-    <p>It's meant for the moment mid-session when you need to check exactly what a spell does, whether that's confirming a player's cast, looking up range or duration on the fly, or browsing what a class has available at a given level while building a character.</p>
-    <h4>A few common questions</h4>
-    <p><strong>Can I filter by class and level at the same time?</strong> Yes, both filters apply together, so you can narrow the list to, for example, only Wizard spells at 3rd level.</p>
-    <p><strong>Does it cover every class?</strong> Yes, all core 5th Edition spellcasting classes are included, along with every spell available to them.</p>
-    <p><strong>Is the spell text the same as the Player's Handbook?</strong> The entries are written to match the SRD rules rather than quoted directly from the book, so the mechanics are accurate while the wording is our own.</p>
-  </section>
 </div>
 
 <div class="app" id="bestiaryView" hidden>
@@ -3133,15 +3023,6 @@
     <div id="bestiaryListContainer"></div>
   </main>
 
-  <section class="tool-about">
-    <h3>About Bestiary</h3>
-    <p>Bestiary is a searchable lookup of every creature's full stat block, the same monsters Monster Forge draws from, but here you search for a specific creature by name instead of rolling a random one. Type a name or filter by creature type, and click through to see armor class, hit points, speed, abilities, traits, and every action in full.</p>
-    <p>It's built for the moment you already know which creature you need. A Druid player checking what shape they'll take with Wild Shape, or a Dungeon Master confirming a monster's exact stats mid-fight, without digging back through Monster Forge's random rolls to find it.</p>
-    <h4>A few common questions</h4>
-    <p><strong>How is this different from Monster Forge?</strong> Monster Forge rolls a random creature for you. Bestiary is a direct lookup, search for exactly the creature you already have in mind.</p>
-    <p><strong>Can I send a creature straight into a fight?</strong> Yes, use the Send to Tracker button on any creature’s stat block to add it to the Initiative Tracker with initiative already rolled.</p>
-    <p><strong>Does it cover every creature Monster Forge can roll?</strong> Yes, every creature Monster Forge can roll is available here too, just searchable directly rather than by chance.</p>
-  </section>
 </div>
 
 <div class="app" id="accountView" hidden>
@@ -3230,15 +3111,6 @@
     </div>
   </main>
 
-  <section class="tool-about">
-    <h3>About Initiative Tracker</h3>
-    <p>Initiative Tracker keeps combat organized once a fight actually starts. Add every combatant, players and monsters alike, with their initiative, hit points, and armor class, and it sorts the whole group into turn order automatically. Next Turn steps you through each combatant in sequence and moves to the next round once everyone has gone.</p>
-    <p>Each combatant's hit points can be adjusted directly during the fight, and any of the standard conditions, such as poisoned, prone, or restrained, can be attached and removed as the battle changes. Monster names entered here autocomplete against the full Monster Forge library, filling in hit points and armor class for you.</p>
-    <h4>A few common questions</h4>
-    <p><strong>Does it save my combat if I leave the page?</strong> Yes. The tracker keeps your combat in this browser while you move between tools, add monsters from Monster Forge or Encounters, or even close the tab. It only clears when you press Reset.</p>
-    <p><strong>Can I add a monster straight from Monster Forge or Encounters?</strong> Yes, both tools have a Send to Tracker option that loads the result in with initiative already rolled.</p>
-    <p><strong>What happens when a combatant's HP hits zero?</strong> Their HP is shown clearly at zero so you can track them as down, though it's left to you to decide how that plays out at the table.</p>
-  </section>
 </div>
 
 <div class="app" id="dungeonView" hidden>
@@ -3286,17 +3158,7 @@
     <p class="brand-sub">This site is free to use and always will be. If it's been handy at your table, this is where you can help keep it running.</p>
   </aside>
 
-  <main class="sheet-wrap">
-    <div class="sheet">
-      <h2 class="char-name" style="font-size:26px;">Hello, adventurers!</h2>
-      <p class="donate-copy">I'm Tom, a 28-year-old from London who's loved fantasy for as long as I can remember. I've been reading it my whole life, and in my spare time I'm slowly working on a fantasy novel of my own (very slowly, it's taking its damn time).</p>
-      <p class="donate-copy">I've always loved Dungeons &amp; Dragons, but I got frustrated having to scour the internet for tools I actually found useful, so I decided to put them all in one place instead.</p>
-      <p class="donate-copy">This site costs me about £20 a year to run. If you've found any of these tools useful and you're feeling generous, there's a link below. No pressure at all. I don't expect any donations, but it'd be kind of cool if you wanted to.</p>
-      <script type="text/javascript" src="https://storage.ko-fi.com/cdn/widget/Widget_2.js"></script>
-      <script type="text/javascript">kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'I1Q12504QF');kofiwidget2.draw();</script>
-      <p class="donate-legal">Fantasy Portal is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. &copy;Wizards of the Coast LLC.</p>
-    </div>
-  </main>
+  <main class="sheet-wrap"></main>
 </div>
 
 <div class="app" id="blogView" hidden>
@@ -3306,31 +3168,7 @@
     <p class="brand-sub">A few tools I use myself and think are genuinely worth your time. None of these are mine, and nobody's paying me to say any of this.</p>
   </aside>
 
-  <main class="sheet-wrap">
-    <div class="sheet">
-      <div class="blog-logo-badge"><img src="/images/blog/icastminis.png" loading="lazy" alt="I Cast Minis logo"></div>
-      <h2 class="char-name" style="font-size:26px;">I Cast Minis</h2>
-      <p class="donate-copy">I Cast Minis is a UK-based shop making custom 3D printed miniatures, including a range built specifically for spell effects. Instead of just narrating a fireball, you can drop a physical scorched-earth mini onto the table under it. They also do Hero Forge 3D printing, so if you've built a character on Hero Forge you can get it printed and posted from the UK rather than waiting on international shipping.</p>
-      <p class="donate-copy">This one's a small, physical touch rather than a digital tool, but it's made a real difference at my own table. Seeing an actual object appear when a spell goes off lands differently than just being told about it.</p>
-      <p class="donate-copy"><a href="https://icastminis.com/" target="_blank" rel="noopener noreferrer">icastminis.com</a></p>
-    </div>
-
-    <div class="sheet" style="margin-top:24px;">
-      <div class="blog-logo-badge"><img src="/images/blog/bardy.png" loading="lazy" alt="Bardy logo"></div>
-      <h2 class="char-name" style="font-size:26px;">Bardy</h2>
-      <p class="donate-copy">Bardy is a free AI DJ built for D&amp;D and other tabletop games. It listens to what's happening at the table and switches the background music and ambience to match, so a tense negotiation gets quiet, tense music, and it shifts straight to a fight track the moment someone says "roll initiative." All the music itself is made by real human composers, the AI side is just used to pick and time the right track.</p>
-      <p class="donate-copy">I like it because it removes a job I was never any good at anyway. I'd either forget to change the playlist mid-scene or spend ten minutes hunting for the right track while the table sat there waiting. Bardy just handles it in the background, and you can always override it manually if it picks wrong.</p>
-      <p class="donate-copy"><a href="https://www.bardy.ai/" target="_blank" rel="noopener noreferrer">bardy.ai</a></p>
-    </div>
-
-    <div class="sheet" style="margin-top:24px;">
-      <div class="blog-logo-badge blog-logo-badge-light"><img src="/images/blog/fantasy-town-generator.png" loading="lazy" alt="Fantasy Town Generator logo"></div>
-      <h2 class="char-name" style="font-size:26px;">Fantasy Town Generator</h2>
-      <p class="donate-copy">Fantasy Town Generator builds a full, visual town map in one click: roads, buildings, rivers, farmland, the lot. Click on any building and you get a list of the NPCs who live or work there, complete with their own personalities and how they're connected to each other. Click on an NPC and you get a description, a personality, and even ability scores if you're running 5e. There's also a clock, so NPCs actually move around the town as time passes.</p>
-      <p class="donate-copy">It's my go-to whenever a party wanders somewhere I hadn't planned for. A town that would normally take me an hour to sketch out is ready in seconds, and it still feels like a real place rather than a random list.</p>
-      <p class="donate-copy"><a href="https://www.fantasytowngenerator.com/" target="_blank" rel="noopener noreferrer">fantasytowngenerator.com</a></p>
-    </div>
-  </main>
+  <main class="sheet-wrap"></main>
 </div>
 
 <button type="button" class="feedback-trigger" id="feedbackTrigger" aria-haspopup="dialog">

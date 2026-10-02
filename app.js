@@ -11735,8 +11735,11 @@ let authReady = false;
 // Declared up here because the sign-in callback below can fire as soon as it's registered.
 let accountProfile = { avatarId: 'wizard', accentColor: 'brass' };
 
+// Resolves with the signed-in user, or null if the popup was closed or failed.
 function signInWithGoogle(){
-  fbAuth.signInWithPopup(googleProvider).catch((e) => { console.error('Sign-in failed', e); });
+  return fbAuth.signInWithPopup(googleProvider)
+    .then((result) => (result && result.user) || null)
+    .catch((e) => { console.error('Sign-in failed', e); return null; });
 }
 function signOutOfAccount(){
   fbAuth.signOut();
@@ -11843,7 +11846,16 @@ function setCurrentRollId(type, id){
 }
 
 function saveCurrentRollToAccount(type, obj, buttonEl){
-  if(!currentUser){ signInWithGoogle(); return; }
+  if(!currentUser){
+    // Signed out: sign in, then finish the save they asked for, so they
+    // don't have to find the button and click it a second time.
+    signInWithGoogle().then((user) => {
+      if(!user) return;
+      currentUser = user;
+      saveCurrentRollToAccount(type, obj, buttonEl);
+    });
+    return;
+  }
   const originalText = buttonEl ? buttonEl.textContent : '';
   if(buttonEl){ buttonEl.textContent = 'Saving…'; buttonEl.disabled = true; }
 
