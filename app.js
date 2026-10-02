@@ -9099,7 +9099,7 @@ const mobileNavHeader = document.getElementById('mobileNavHeader');
 const scrollCueBtn = document.getElementById('scrollCueBtn');
 const landingToolsPage = document.getElementById('landingToolsPage');
 
-scrollCueBtn.addEventListener('click', () => {
+if(scrollCueBtn) scrollCueBtn.addEventListener('click', () => {
   scrollCueBtn.classList.remove('pulse');
   scrollCueBtn.blur();
   landingToolsPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
