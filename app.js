@@ -11154,6 +11154,12 @@ function nextTurn(){
   if(nextIdx === 0 && idx !== -1) roundNumber++;
   currentTurnId = sorted[nextIdx].id;
   renderTracker();
+  // Keep whoever's turn it is on screen (on a phone the list is long).
+  const card = trackerListContainer.querySelector('.tracker-combatant.current-turn');
+  if(card){
+    const r = card.getBoundingClientRect();
+    if(r.top < 0 || r.bottom > window.innerHeight) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 trackerNextBtn.addEventListener('click', nextTurn);
 
@@ -11163,7 +11169,24 @@ function resetTracker(){
   roundNumber = 1;
   renderTracker();
 }
-trackerResetBtn.addEventListener('click', resetTracker);
+// New Combat wipes the whole fight, and on a phone it sits right under Next
+// Turn, so it takes a second tap to confirm.
+let trackerResetArmedTimer = null;
+trackerResetBtn.addEventListener('click', () => {
+  if(!combatants.length){ resetTracker(); return; }
+  if(trackerResetArmedTimer){
+    clearTimeout(trackerResetArmedTimer);
+    trackerResetArmedTimer = null;
+    trackerResetBtn.textContent = 'New Combat';
+    resetTracker();
+    return;
+  }
+  trackerResetBtn.textContent = 'Tap again to clear the fight';
+  trackerResetArmedTimer = setTimeout(() => {
+    trackerResetArmedTimer = null;
+    trackerResetBtn.textContent = 'New Combat';
+  }, 3000);
+});
 
 function adjustHp(id, delta){
   const c = combatants.find(c => c.id === id);
@@ -11197,7 +11220,7 @@ function renderTracker(){
   saveTrackerState();
   trackerRoundLabel.textContent = roundNumber;
   if(!combatants.length){
-    trackerListContainer.innerHTML = '<div class="sheet-empty"><span class="glyph">&#9876;</span><h2>No combatants yet</h2><p>Add everyone in the fight on the left, then hit Next Turn to step through the round.</p></div>';
+    trackerListContainer.innerHTML = '<div class="sheet-empty"><span class="glyph">&#9876;</span><h2>No combatants yet</h2><p>Add everyone in the fight, then hit Next Turn to step through the round.</p></div>';
     return;
   }
   const sorted = sortedCombatants();
@@ -11231,6 +11254,7 @@ function renderTracker(){
               '<div class="tracker-condition-menu">'+conditionOptionsHtml+'</div>' +
             '</div>' +
           '</div>' +
+          (isCurrent ? '<button type="button" class="tracker-end-turn" data-end-turn>End turn</button>' : '') +
         '</div>' +
         '<button type="button" class="tracker-remove-btn" data-remove-combatant="'+c.id+'" aria-label="Remove combatant">&times;</button>' +
       '</div>'
@@ -11251,6 +11275,7 @@ function setExactHp(id, value){
 }
 
 trackerListContainer.addEventListener('click', (e) => {
+  if(e.target.closest('[data-end-turn]')){ nextTurn(); return; }
   const hpBtn = e.target.closest('[data-hp-delta]');
   if(hpBtn){
     adjustHp(parseInt(hpBtn.getAttribute('data-id'), 10), parseInt(hpBtn.getAttribute('data-hp-delta'), 10));
@@ -11317,19 +11342,55 @@ function addMonsterToTracker(m){
   });
 }
 
-function sendEncounterToTracker(enc){
-  enc.monsters.forEach(addMonsterToTracker);
+// Sending monsters used to pile them onto whatever fight was last left in
+// the tracker (it's kept between visits). If old monsters are still there,
+// ask whether this is a new fight or more of the same one.
+const trackerSendOverlay = document.getElementById('trackerSendOverlay');
+const trackerSendPanel = document.getElementById('trackerSendPanel');
+const trackerSendSummary = document.getElementById('trackerSendSummary');
+let pendingTrackerMonsters = null;
+let trackerSendLastFocusedEl = null;
+
+function plural(n, word){ return n + ' ' + word + (n === 1 ? '' : 's'); }
+
+function finishSendingMonsters(monsters, newFight){
+  if(newFight){
+    combatants = combatants.filter(c => c.role !== 'monster');
+    currentTurnId = null;
+    roundNumber = 1;
+  }
+  monsters.forEach(addMonsterToTracker);
   if(currentTurnId === null && combatants.length) currentTurnId = sortedCombatants()[0].id;
   switchTab('tracker');
   renderTracker();
 }
 
-function sendMonsterToTracker(m){
-  addMonsterToTracker(m);
-  if(currentTurnId === null) currentTurnId = sortedCombatants()[0].id;
-  switchTab('tracker');
-  renderTracker();
+function sendMonstersToTracker(monsters){
+  const oldMonsters = combatants.filter(c => c.role === 'monster').length;
+  if(!oldMonsters){ finishSendingMonsters(monsters, false); return; }
+  const players = combatants.length - oldMonsters;
+  pendingTrackerMonsters = monsters;
+  trackerSendSummary.textContent = 'It has ' + plural(oldMonsters, 'monster') +
+    (players ? ' and ' + plural(players, 'player') : '') + ', on round ' + roundNumber + '.';
+  trackerSendLastFocusedEl = document.activeElement;
+  trackerSendOverlay.hidden = false;
+  trackerSendPanel.focus();
 }
+function closeTrackerSend(choice){
+  const monsters = pendingTrackerMonsters;
+  pendingTrackerMonsters = null;
+  trackerSendOverlay.hidden = true;
+  if(choice && monsters) finishSendingMonsters(monsters, choice === 'new');
+  else if(trackerSendLastFocusedEl && trackerSendLastFocusedEl.focus) trackerSendLastFocusedEl.focus();
+}
+document.getElementById('trackerSendNewBtn').addEventListener('click', () => closeTrackerSend('new'));
+document.getElementById('trackerSendAddBtn').addEventListener('click', () => closeTrackerSend('add'));
+document.getElementById('trackerSendClose').addEventListener('click', () => closeTrackerSend(null));
+trackerSendOverlay.addEventListener('click', (e) => { if(e.target === trackerSendOverlay) closeTrackerSend(null); });
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && !trackerSendOverlay.hidden) closeTrackerSend(null); });
+
+function sendEncounterToTracker(enc){ sendMonstersToTracker(enc.monsters); }
+function sendMonsterToTracker(m){ sendMonstersToTracker([m]); }
 
 function sendCharacterToTracker(c){
   const initiative = roll(20) + 1 + sheetInitiative(c).total;

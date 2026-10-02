@@ -1356,6 +1356,32 @@
     padding: 4px;
   }
   .tracker-remove-btn:hover{ color: var(--sigil-red); }
+  /* Tap the HP to type an exact value: make that look tappable. */
+  .tracker-hp-value{ cursor:pointer; text-decoration: underline dotted rgba(var(--accent-rgb),0.6); text-underline-offset: 4px; }
+  /* End turn sits on the active combatant's card, so on a phone you never
+     have to scroll back up to Next Turn. */
+  .tracker-end-turn{
+    margin-top: 10px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--brass-bright);
+    background: var(--brass-bright);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .tracker-end-turn:hover{ background: var(--cream-text); border-color: var(--cream-text); }
+  @media (max-width: 640px){
+    .tracker-combatant{ padding: 12px; gap: 10px; }
+    .tracker-hp-row{ gap: 10px; }
+    .tracker-hp-btn{ width: 38px; height: 38px; font-size: 18px; }
+    .tracker-remove-btn{ min-width: 40px; min-height: 40px; }
+    .tracker-condition-tag{ font-size: 12px; padding: 7px 12px; }
+    .tracker-condition-option{ font-size: 12px; padding: 8px 10px; }
+    .tracker-end-turn{ width: 100%; padding: 11px 14px; font-size: 13px; }
+  }
 
   .spellbook-section{ margin-bottom: 24px; }
   .spellbook-section:last-child{ margin-bottom: 0; }
@@ -2660,6 +2686,11 @@
     transition: background 0.15s ease, border-color 0.15s ease;
   }
   .modal-action-btn:hover{ background: rgba(43,32,19,0.14); border-color: rgba(43,32,19,0.4); }
+  .modal-action-btn.modal-action-primary{ background: var(--accent-ink); border-color: var(--accent-ink); color: #F7F2E7; font-weight: 600; }
+  .modal-action-btn.modal-action-primary:hover{ background: var(--accent-ink-deep); border-color: var(--accent-ink-deep); }
+  .tracker-send-actions{ display:flex; gap:10px; }
+  .tracker-send-actions .modal-action-btn{ flex:1; }
+  @media (max-width: 420px){ .tracker-send-actions{ flex-direction: column; } }
   .modal-action-btn:focus-visible{ outline: 2px solid var(--ink-text); outline-offset: 2px; }
   /* The cookie banner sits on the dark page background, not a parchment
      modal, so its secondary button needs the page's text colour. */
@@ -3548,6 +3579,21 @@
     <div class="cookie-banner-actions">
       <button type="button" class="modal-action-btn" id="cookieRejectBtn">Necessary only</button>
       <button type="button" class="modal-action-btn cookie-accept-btn" id="cookieAcceptBtn">Accept all</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="trackerSendOverlay" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="trackerSendTitle" tabindex="-1" id="trackerSendPanel" style="max-width:420px;">
+    <button type="button" class="modal-close" id="trackerSendClose" aria-label="Close">&times;</button>
+    <h2 class="modal-title" id="trackerSendTitle">There's already a fight in the tracker</h2>
+    <div class="modal-body">
+      <p style="margin:0 0 8px;" id="trackerSendSummary"></p>
+      <p style="margin:0 0 20px;">A new fight clears the old monsters and goes back to round 1. Your players stay as they are.</p>
+      <div class="tracker-send-actions">
+        <button type="button" class="modal-action-btn modal-action-primary" id="trackerSendNewBtn">Start a new fight</button>
+        <button type="button" class="modal-action-btn" id="trackerSendAddBtn">Add to this fight</button>
+      </div>
     </div>
   </div>
 </div>
