@@ -6882,6 +6882,233 @@ function pickBossMonster(){
   };
 }
 
+/* ================= MONSTER LORE HOOKS =================
+   Optional backstory for a rolled monster: why it's here, what it wants, and
+   something the party can do about it. {n} is replaced with the monster's
+   name in lower case ("the {n}" -> "the green hag"). Iconic monsters have
+   their own hooks, used most of the time; everything else draws from hooks
+   written for its creature type. All original text. */
+const LORE_BY_TYPE = {
+  aberration: [
+    'The {n} arrived through a crack in the deepest seam of a silver mine, and the miners who first saw it now talk in unison in their sleep. The mine owner wants it sealed in quietly before the guild hears; the miners’ families want them back.',
+    'A scholar summoned the {n} to answer one question and has spent twelve years answering its questions instead. Her journals explain how to send it back, but they’re in a cipher only she can read, and she no longer remembers it.',
+    'Something taught the {n} to dream, and its dreams are leaking into the village above: the same black tower, every night, for everyone. Last week a stonemason started building it.',
+    'The {n} is the last of a brood that a forgotten order of knights died to destroy. Their sigil is still carved above its lair, and the order’s final knight, very old now, wants to finish the job himself.',
+    'The {n} has been trading secrets to a city councillor for years, one memory per favour. He no longer remembers his children’s names, and his wife has started asking why.',
+    'The {n} isn’t hunting, it’s searching, for a star-shaped stone a pedlar sold three towns over. Whoever owns the stone now has started hearing whispers at night.',
+  ],
+  beast: [
+    'The {n} was driven out of its old hunting grounds by something bigger, and it’s been taking livestock ever since. Kill it and the farms are safe for a season; follow its trail home and you’ll find out what pushed it out.',
+    'A noble’s menagerie keeper set the {n} loose rather than see it sold to a fighting pit. It’s been free a month, and the keeper is quietly offering coin to anyone who brings it back alive.',
+    'Hunters say the {n} carries an old arrow in its shoulder, fletched in the colours of a family that vanished twenty years ago. Whoever fired that arrow was the last to see them alive.',
+    'The {n} is guarding a den of young beside the only road through the pass. A merchant caravan is due through in three days, and it won’t wait.',
+    'A druid circle swears the {n} is a messenger: it has circled the same ruined shrine every dusk for a week. They want someone to go inside and find out what it’s waiting for.',
+    'The {n} wears a silver collar engraved with a name. Its owner, a retired adventurer, died last month, and her will leaves everything to “whoever my companion trusts.”',
+  ],
+  celestial: [
+    'The {n} was set to guard a relic and was never told the war ended. It still turns back anyone who approaches, including the pilgrims who’ve come to carry the relic home.',
+    'A temple claims the {n} blessed its founder in a vision. The founder’s real diary, which the temple would very much like to stay lost, says it came to warn him.',
+    'The {n} has lost its way back to the heavens and is ashamed to ask mortals for help. It will test anyone who offers, and it doesn’t test kindly.',
+    'Someone is killing the {n}’s mortal faithful one by one, and it is forbidden to intervene directly. It needs agents willing to bend rules it cannot.',
+    'The {n} fell in love with a travelling bard, and its superiors have ordered it home. It will trade a great deal for one more year.',
+    'Once a century the {n} returns to judge a single city. This is the hundredth year, and the city’s rulers would prefer it found no witnesses.',
+  ],
+  construct: [
+    'The {n} was built to guard its maker’s workshop, and its maker died eighty years ago. It still sweeps the floors, still guards the door, and still waits for a password nobody living knows.',
+    'A collector bought the {n} at auction as a curiosity. It started moving the night his daughter went missing, and it keeps walking towards the same spot on the map.',
+    'The {n}’s commands are written on a scroll sealed inside its chest. Whoever reads them can give it new orders, which is why three different factions want it opened.',
+    'Built for a war that ended in a treaty, the {n} was buried rather than destroyed. Floods have uncovered it, and its last order was never cancelled.',
+    'The {n} was meant to carry its creator’s mind after death, and it might have worked: it answers to her name. Her apprentice wants to know whether to bow or run.',
+    'The {n} has been repairing itself with parts from the town clock tower, and the town has lost track of time in more ways than one.',
+  ],
+  dragon: [
+    'The {n} was promised tribute by a king who has since died. His heir thinks the debt died with him. The {n} disagrees, and the first village has already burned.',
+    'Someone stole an egg from the {n}’s clutch and sold it at a county fair. It’s searching town by town, and it isn’t asking politely.',
+    'The {n} has grown old and lonely, and now collects stories the way it once collected gold. It will trade treasure for a tale it hasn’t heard, and it always knows when it’s being lied to.',
+    'A cult believes the {n} is a god and has been bringing it “offerings” from the nearby farms. The {n} finds the arrangement convenient and has no intention of correcting them.',
+    'The {n} sleeps beneath the town’s founding stones, and the founders knew it. Their bargain is written in a charter nobody has read in two hundred years, and the term is up.',
+    'The {n} lost a duel with a rival and is wounded, hiding and furious. Whoever finds it first can kill it, bargain with it or help it, and every choice makes a powerful enemy.',
+  ],
+  elemental: [
+    'The {n} was bound to power a mage’s forge, and she died without releasing it. It has been trapped in her cellar for forty years, the binding weakens every winter, and the new owners of the house have noticed.',
+    'A botched ritual tore the {n} loose from its home plane, and it’s smashing its way across the countryside looking for the way back. The cultists who opened the door would rather nobody knew it was them.',
+    'The {n} is the spirit of a place that’s being quarried, dammed or mined away. It has asked politely twice.',
+    'An old pact between the {n}’s kind and a local family keeps the region’s weather mild. The family’s last member has just died, and the {n} wants to know who signs next.',
+    'The {n} is imprisoned in a gemstone set in a duchess’s tiara. She wears it to every ball, and it is very close to breaking free.',
+    'The {n} obeys whoever wears a particular brass ring, and that ring just changed hands over a game of cards.',
+  ],
+  fey: [
+    'The {n} was owed a favour by a family three generations ago, and it has come to collect. The favour it wants is the youngest child’s name.',
+    'A wedding party took a shortcut through the {n}’s wood and never came out. That was yesterday. Inside the wood, it has been a year.',
+    'The {n} is bored, and a bored fey is dangerous. It has started “helping” a village, granting wishes exactly as worded and not one word more.',
+    'The {n} was banished from its court for loving a mortal, and is trying to win its way back with pranks that are getting less funny each time.',
+    'The {n} guards a crossing into the Feywild and charges a toll: a memory, a laugh or a year of your life. Someone has been paying it in other people’s memories.',
+    'The {n} has stolen the town’s bells, and without them nothing keeps out what walks in the fog. It will trade them back, but only for something it finds equally beautiful.',
+  ],
+  fiend: [
+    'The {n} was summoned by a desperate noble who couldn’t afford its price, so he offered his firstborn instead. That firstborn is an adult now, and the contract is due.',
+    'The {n} is here on business: collecting a soul that was sold fair and square, except the seller found a loophole. It would rather hire mortals to settle the matter than break the rules itself.',
+    'A church has kept the {n} chained beneath its altar for three hundred years. The new high priest has started visiting it at night.',
+    'The {n} deserted the endless war in the Lower Planes and is hiding among mortals, terrified of being dragged back. It will sell its old masters’ secrets to anyone who shelters it.',
+    'Whoever speaks the {n}’s true name gets one command it can’t refuse. Three people know the name, and one of them is dying.',
+    'The {n} has run a gambling hall in the docks district for years. The stakes are never money.',
+  ],
+  giant: [
+    'The snows never came this year and the {n}’s family is starving, so it’s come down from the mountains to raid. It would stop if someone offered another way.',
+    'The {n}’s ancestors built the road the kingdom still uses, and it has come to collect two centuries of unpaid tolls.',
+    'Thieves stole the {n}’s heirloom, a ring the size of a cartwheel, and it has followed their trail straight to the nearest town.',
+    'Exiled from its clan after losing a duel, the {n} is looking for a great deed to win back its honour. It has decided that killing a famous adventuring party would count.',
+    'The {n} has been keeping the local bandits in line in exchange for food. Nobody in town knows they’re being protected, and they won’t find out until someone kills it.',
+    'The {n} has been having prophetic dreams, and every one ends with the same human face. It has come down from the mountains to find that face.',
+  ],
+  humanoid: [
+    'The {n} was a loyal soldier until their captain sold the unit to the enemy. Most of them died. This one lived, and has spent years working down a list of names.',
+    'The {n} has a price on their head for a crime they didn’t commit, and the real culprit is the one who posted the bounty.',
+    'The {n} is the last of their band and has been surviving by raiding caravans. They would much rather be paid to guard them.',
+    'The {n} has been preaching in the market about something coming from the north. Everyone laughs. So far, they’ve been right about everything.',
+    'The {n} is carrying a sealed letter they were paid to deliver, and has no idea that everyone else who handled it has died within a week.',
+    'The {n} is someone’s missing sibling, and the person who hired you to find them has no idea what they’ve become.',
+  ],
+  monstrosity: [
+    'The {n} was bred to guard a wizard’s tower. The wizard vanished years ago, and it has been guarding the empty building against everyone since, including her heirs.',
+    'Hunters have chased the {n} for a decade for the bounty on its head. The bounty was posted by the noble who created it, who would prefer the evidence gone.',
+    'The {n} has made its lair in the only pass through the mountains, and it takes its toll in livestock. The town has paid for years, and now it wants more.',
+    'The {n} is what a sorceress turned a knight into for betraying her. Some of the knight is still in there, and on clear nights it weeps.',
+    'A travelling show keeps the {n} in a cage, and the cage is failing. The showman will pay a fortune for someone to quietly deal with it before the crowds arrive.',
+    'The {n} has started leaving gifts at the edge of the village: shiny stones, dead rabbits, once a rusted sword. Nobody knows what it wants in return.',
+  ],
+  ooze: [
+    'The {n} began as a sewer-cleaning solution brewed by the city’s alchemists’ guild. It has been eating more than refuse lately, and the guild is very keen that nobody finds out whose it is.',
+    'The {n} absorbed the contents of a noble’s vault, and somewhere inside it floats a signet ring that would settle a succession war.',
+    'Dwarves sealed the {n} behind a door marked in a language nobody reads any more. Treasure hunters have just broken the seal.',
+    'The {n} has been feeding on the plague dead buried under the old temple, and lately it’s been growing faster.',
+    'The {n} keeps the dungeon clean for its master, a necromancer who has been dead for decades. It doesn’t know that, and it’s still working.',
+    'Something is guiding the {n}, steering it down particular corridors at particular times, and the trail leads straight to the local thieves’ guild.',
+  ],
+  plant: [
+    'The {n} grew from a seed buried with a druid who died cursing the loggers who burned her grove. The loggers’ sawmill is a mile away.',
+    'The {n} is spreading from the graveyard, and every flower it opens has the face of someone buried there.',
+    'A herbalist harvests the {n} for a cure that works miracles. She hasn’t told her patients what it does to them after a year.',
+    'The {n} took root in a wizard’s garden and fed on her spell components for years. It now knows a few of her spells.',
+    'The {n} guards the last stand of a rare tree whose sap the royal alchemists need. They sent woodcutters. The woodcutters haven’t come back.',
+    'The {n} grew over the grave of a hero who asked to be buried in the forest. The forest took that seriously, and it still defends the village the hero died for.',
+  ],
+  undead: [
+    'In life the {n} was a ferryman who drowned with his passengers on a stormy night. It still waits at the crossing for the fare nobody paid, and anyone who pays in silver may pass.',
+    'The {n} was murdered and buried in an unmarked grave, and it won’t rest until its killer is named. The killer is alive and sits on the town council.',
+    'A necromancer raised the {n} to guard her crypt and then died herself. It has been following her last order for longer than the town has existed.',
+    'The {n} haunts the house it was born in, waiting for a letter from a lover who went to war. The letter exists: it’s in a dead soldier’s pack on a battlefield two days’ ride away.',
+    'The {n} was a priest who bargained to keep serving his temple after death. He bargained with the wrong god, and the temple’s new acolytes have started to change.',
+    'The {n} is one of dozens rising from an old battlefield since a farmer ploughed up a cursed standard. Rebury the standard properly and they rest; leave it and they march.',
+  ],
+};
+
+const LORE_HAG = [
+  'She was the village midwife until a fever took her own daughter. She went into the marsh to bargain for the girl back, and came out as the {n}. Now she trades in other people’s children, and the newest baby in the village hasn’t cried in three days.',
+  'The {n} was once one of three sisters who loved the same man. Two of them are with her in the marsh now, after a fashion, and she has grown lonely for the third.',
+  'The {n} has been granting a widowed miller’s wishes: a full harvest, a cured son, a fortune in grain. He’s just noticed that someone else in the village loses exactly what he gains.',
+];
+const LORE_CHROMATIC = [
+  'The {n} learned the language of its prey so it could lie to it better, and for twenty years it has ruled a valley through a puppet mayor. The mayor wants out. The {n} has his family.',
+  'The {n}’s hoard includes the crown jewels of a kingdom it destroyed a century ago. The kingdom’s descendants, poor and scattered, have finally saved enough to hire someone.',
+];
+const LORE_METALLIC = [
+  'For decades the {n} has lived in human form as the kindly owner of a bookshop. Someone has found out, and is selling the secret to a dragon hunter.',
+  'The {n} once swore to protect a royal line, and the last heir is a farmhand who has no idea. It needs someone to fetch him before its chromatic rival does.',
+];
+const LORE_WYRMLING = [
+  'The {n} hatched in a hayloft from an egg a farmer found and kept warm. He’s grown very fond of it. It has grown very hungry.',
+  'The {n} is the runaway child of a much larger dragon, which is coming to collect it and is in a foul mood about the whole thing.',
+];
+const LORE_BY_NAME = {
+  'Vampire': [
+    'The {n} was a beloved count, turned on his wedding night. He has spent a century funding scholars in search of a cure, and the latest has finally found one. It needs a living heart.',
+    'The {n} has been courting the same family for three generations, always the eldest daughter, always on her twentieth birthday. The youngest daughter turns twenty on Friday.',
+  ],
+  'Vampire Spawn': [
+    'The {n} was turned to serve a master who has gone missing, and without orders it is starving and terrified. It will bargain anything for its master’s whereabouts, or for help to finally die.',
+  ],
+  'Lich': [
+    'The {n} became undead to finish a spell that would end a plague. It has worked on it for three hundred years and is nearly done, though the cure now calls for a city’s worth of souls.',
+    'The {n} hid its phylactery inside a child’s wooden toy, reasoning that nobody would ever look there. The toy has been handed down for generations, and it’s now in a nursery.',
+  ],
+  'Demilich': ['The {n} was a lich so old it forgot what it was guarding. Explorers have just reopened its tomb, and it has started to remember.'],
+  'Death Knight': ['The {n} was a paladin who broke his oath to save his family and lost them anyway. He guards their tomb against everyone, and would give anything to be forgiven.'],
+  'Mummy': ['The {n} was a royal servant entombed alive to serve his queen in death. Graverobbers took her jewels last month, and he is following them, piece by piece, across the city’s markets.'],
+  'Mummy Lord': ['The {n} was a queen buried with her treasures and her servants. Her tomb was robbed last month, the pieces are being sold in a city market, and she is following each one.'],
+  'Ghost': ['The {n} haunts the theatre where she died on opening night. She’ll leave when someone finishes performing her play, but the last page was torn out by her killer.'],
+  'Adult Blue Dracolich': ['The {n} was a dragon who feared death more than anything, and a cult helped it cheat. Now the cult wants paying, and the {n} has found it doesn’t care to serve anyone.'],
+  'Beholder': ['The {n} dreamed a perfect version of itself and is convinced the dream is real. It is hiring adventurers to find and kill its “impostor”, which it insists lives in the nearby city.'],
+  'Mind Flayer': ['The {n} has been cut off from its colony, and the voice of its elder brain has gone silent. It is terrified, and for the first time in its life it’s offering to deal with the food.'],
+  'Aboleth': ['The {n} remembers the world before the gods, and it has been whispering that memory into the dreams of a fishing town. The townsfolk have started walking into the sea.'],
+  'Mimic': ['The {n} has lived as a treasure chest in a tavern cellar for years, eating rats and the occasional thief. The tavern’s new owner has just ordered the cellar cleared and the old chest sold.'],
+  'Medusa': ['She was cursed for refusing a god, and has spent centuries in a garden of statues. One of them is a prince whose father pays well, but she will only release him if someone breaks her curse.'],
+  'Minotaur': ['The {n} was born in a king’s labyrinth and fed on his prisoners. The king is dead, the walls are crumbling, and the {n} wants to know what’s outside.'],
+  'Werewolf': ['The {n} is the town’s well-liked blacksmith, and he has no idea what he does at night. His daughter does, and she has been covering for him.'],
+  'Doppelganger': ['The {n} replaced a merchant months ago and has been a better father to his children than he ever was. The real merchant has just escaped from where it hid him.'],
+  'Owlbear': ['A wizard bred the {n} as a guardian and gave it to her village. She’s dead and the village has forgotten, but every evening the {n} still waits at the edge of town to be fed.'],
+  'Gelatinous Cube': ['The {n} has cleaned the same dungeon for a hundred years. Floating inside it, perfectly preserved, is a key every faction in the region wants.'],
+  'Troll': ['The {n} lost an arm to a knight’s sword; the arm grew into a second troll, and the two have hated each other ever since. Each will pay to have the other killed.'],
+  'Unicorn': ['The {n} has guarded the forest’s sacred spring for a thousand years, and the spring is drying up because of a mine upstream. It’s asking for champions, not prayers.'],
+  'Treant': ['The {n} was planted by the first king to mark his kingdom’s border. The kingdom has forgotten; the {n} hasn’t, and it considers the new road an invasion.'],
+  'Dryad': ['The {n} is bound to an oak a lord wants felled for his new hall. She has offered him everything she can think of, and he is still sending the woodcutters.'],
+  'Flesh Golem': ['The {n} was stitched together from a bandit gang by their only surviving victim. It remembers pieces of each of them, and it wants to know which one it is.'],
+  'Kraken': ['The {n} has slept beneath the bay for a thousand years, and the harbour city was built on one rule: nobody rings the drowned bell. Someone just rang it.'],
+  'Tarrasque': ['The {n} has slept for six hundred years beneath a mountain a dwarf clan has been mining. They’ve just broken into a cavern that breathes.'],
+  'Rakshasa': ['The {n} has been the trusted vizier of three generations of a royal family. The youngest prince has begun to suspect, and he is asking for help very quietly.'],
+  'Oni': ['The {n} lives as the kindly old woman who minds the village children. Children have gone missing for years, but only ever from other villages.'],
+  'Imp': ['The {n} was a wizard’s familiar and has outlived her. It’s trying to sell her spellbook to the highest bidder before its infernal masters notice it’s off the leash.'],
+  'Djinni': ['The {n} was bound into a lamp by a sultan who died before his third wish. The lamp now belongs to a street thief who has no idea what he’s carrying, and the {n} is working very hard to trick him into wishing it free.'],
+  'Efreeti': ['The {n} was bound into a brass bottle as punishment for burning a city. The bottle has just been fished out of a river, and the {n} is offering three wishes to whoever opens it. It is lying about the number.'],
+  'Marid': ['The {n} was bound to a coastal city’s fountain to keep the wells sweet. The binding is fraying, the water is turning salt, and the {n} is in no hurry to be helpful.'],
+  'Gynosphinx': ['The {n} guards the door to a library of lost knowledge, and her riddle has gone unanswered for five hundred years. She’s getting tired of waiting, and has started giving hints.'],
+  'Androsphinx': ['The {n} guards a door to a library of lost knowledge, and his riddle has gone unanswered for five hundred years. He’s getting tired of waiting, and has started giving hints.'],
+  'Dragon Turtle': ['The {n} has been mistaken for an island for a century, and a fishing village is built on its back. It’s waking up.'],
+  'Wyvern': [
+    'A baron has been breeding wyverns as war mounts, and this one escaped with a rider’s saddle still on its back. The rider hasn’t been found.',
+    'The {n} nests on the bell tower of an abandoned monastery, and the monks’ treasury is still somewhere beneath it. Two rival treasure hunters have each hired help.',
+  ],
+  'Pseudodragon': [
+    'The {n} has adopted a lonely apprentice wizard and is trying to protect her from her master, who wants its blood for a potion.',
+    'The {n} has been stealing teaspoons, buttons and thimbles from every house on the street. Its hoard is in the chimney of the mayor’s house, and so is something else.',
+  ],
+  'Guardian Naga': ['The {n} guards a temple whose god has died. It doesn’t know, and it still asks travellers riddles in the god’s name.'],
+  'Spirit Naga': ['The {n} was killed by adventurers forty years ago and came back, as spirit nagas do. It remembers every one of their faces, and their children have started to go missing.'],
+  'Basilisk': ['A collector paid a fortune for the {n}’s egg, and it has hatched in his sculpture garden. His staff keep “leaving without notice.”'],
+  'Archmage': ['The {n} retired to a quiet village to escape her past. Her past has just arrived, and it’s looking for her apprentice instead.'],
+  'Night Hag': ['The {n} has been riding the dreams of the same family for three generations, and the youngest has started dreaming back.'],
+};
+['Green Hag', 'Sea Hag', 'Night Hag'].forEach(n => { LORE_BY_NAME[n] = (LORE_BY_NAME[n] || []).concat(LORE_HAG); });
+
+// Specific hooks for this monster, if it has any.
+function loreHooksForName(name){
+  if(LORE_BY_NAME[name]) return LORE_BY_NAME[name];
+  if(/Wyrmling$/.test(name)) return LORE_WYRMLING;
+  const chromatic = /\b(Red|Blue|Green|Black|White) Dragon$/.test(name);
+  const metallic = /\b(Gold|Silver|Bronze|Copper|Brass) Dragon$/.test(name);
+  if(chromatic && !/^Young/.test(name)) return LORE_CHROMATIC;
+  if(metallic && !/^Young/.test(name)) return LORE_METALLIC;
+  return null;
+}
+
+// One lore hook for a monster: its own hooks most of the time (always for
+// wyrmlings, which the general dragon hooks don't suit), otherwise its type's.
+function monsterLoreHook(m){
+  const typeKey = String(m.type || '').split(' ')[0];
+  const specific = loreHooksForName(m.name);
+  const general = LORE_BY_TYPE[typeKey] || LORE_BY_TYPE.monstrosity;
+  // Wyrmlings, wyverns and pseudodragons always use their own hooks: the general
+  // dragon hooks assume an ancient, scheming dragon.
+  const alwaysOwn = specific === LORE_WYRMLING || m.name === 'Wyvern' || m.name === 'Pseudodragon';
+  const useSpecific = specific && (alwaysOwn || Math.random() < 0.7);
+  const pool = useSpecific ? specific : general;
+  const text = drawFromBag('lore:' + (useSpecific ? m.name : typeKey), pool);
+  // "the adult gold dragon" reads awkwardly in prose; the stat block above shows the full name.
+  const shortName = m.name.replace(/^(Adult|Ancient|Young) /, '').toLowerCase();
+  const filled = text.replace(/\{n\}/g, shortName);
+  return filled.charAt(0).toUpperCase() + filled.slice(1);
+}
+
 function generateMonster(tierKey, locationKey){
   const rawTierPool = (tierKey === 'any')
     ? Object.values(MONSTER_TIERS).reduce((all, names) => all.concat(names), [])
@@ -6953,6 +7180,76 @@ function actualDifficultyForXP(adjustedXP, partySize, partyLevel){
 // Scene-setting openers, each ending in a natural reveal — combined with
 // whichever creature(s) actually got generated, this gives far more real
 // variety than writing one hook per possible monster ever could.
+// Openers written for a specific setting, used when an encounter location is
+// picked; 'any' uses the general ENCOUNTER_HOOKS list below.
+const ENCOUNTER_HOOKS_BY_LOCATION = {
+  forest: ['Sunlight barely reaches the forest floor here, and the birdsong stops all at once. Between the trunks ahead is',
+           'A deer bolts across the path, wide-eyed, and a moment later you see what it was running from:',
+           'The old woodcutters\u2019 trail ends at a clearing ringed with claw marks, and waiting in the middle of it is'],
+  mountain: ['Loose scree skitters down the slope above you, and when you look up you see',
+             'The wind howls through the high pass, carrying a smell you don\u2019t like, and then',
+             'Halfway up the switchback a shadow crosses the sun. Landing on the ledge ahead is'],
+  hill: ['You crest a grassy rise, and the barrow mound below is not as empty as the map promised. Waiting there is',
+         'Smoke rises from behind the next hill, and when you reach the top you find',
+         'The shepherd said the hills were quiet this time of year. He did not mention'],
+  grassland: ['The tall grass parts in a long, slow line heading straight for you, and out of it comes',
+              'Out on the open plain there\u2019s nowhere to hide, which you realise at the same moment as',
+              'A lone standing stone marks the old trade road, and waiting beside it is'],
+  swamp: ['The swamp mud sucks at your boots as the reeds ahead part, revealing',
+          'Will-o\u2019-wisp lights bob over the black water, leading you neatly into',
+          'The boardwalk ends without warning. In the stagnant pool beyond it lurks'],
+  desert: ['The dune shifts beneath your feet and something rises out of the sand:',
+           'Heat shimmer turns the oasis ahead into a mirage, until it moves. Guarding the water is',
+           'The half-buried ruin offers shade, and someone else had the same idea:'],
+  arctic: ['Snow falls so thick you can barely see the rope tying you together, and then, out of the white, comes',
+           'The ice groans under your feet. Something beneath it has heard you, and breaking through is',
+           'Fresh tracks in the snow, too large and too recent. Following them leads you straight to'],
+  coastal: ['The tide goes out further than it should, stranding fish on the sand, and walking out of the shallows is',
+            'Gulls scatter from the wreck on the rocks as you approach. Picking through the wreckage is',
+            'The fog comes in off the sea all at once, and from inside it you hear'],
+  underwater: ['The light fades to blue-black as you descend, and rising from the kelp below is',
+               'A current tugs you towards the sunken temple\u2019s doorway, and waiting inside is',
+               'Bubbles stream from a crack in the reef, and then the reef itself begins to move. It\u2019s'],
+  underdark: ['Your light catches glittering eyes in the cavern ceiling, dozens of them, belonging to',
+              'The fungus forest glows faintly as you pass, and somewhere among the stalks moves',
+              'Water drips in the endless dark, then the dripping stops. Blocking the tunnel is'],
+  urban: ['The market square falls silent as the crowd scatters, leaving you face to face with',
+          'A shortcut down a back alley seemed like a good idea until you met',
+          'The watch bell rings from the gatehouse, and through the panicking crowd comes'],
+  dungeon: ['Your torch gutters as the corridor opens into a wide, low chamber, home to',
+            'The pressure plate clicks under your boot. The trap is a dud, but the noise wakes',
+            'Behind the iron door, past the bones of the last party to try it, waits'],
+  planar: ['The sky here is the wrong colour and the ground hums underfoot. Stepping through a tear in the air is',
+           'Gravity shifts sideways as you cross the threshold, and floating in the new \u201cdown\u201d is',
+           'The portal snaps shut behind you, and the only other thing on this rock is'],
+};
+// Treasure hoard size by how hard the fight was.
+const ENCOUNTER_HOARD_BY_DIFFICULTY = { trivial:'small', easy:'small', medium:'small', hard:'medium', deadly:'large' };
+
+// "an orc and three goblins", with the opener's verb agreeing ("is"/"are").
+function encounterHookText(opener, monsters){
+  const counts = [];
+  monsters.forEach(m => {
+    const c = counts.find(x => x.name === m.name);
+    if(c) c.n++; else counts.push({ name: m.name, n: 1 });
+  });
+  const words = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+  const plural = name => /(s|x|ch|sh)$/i.test(name) ? name + 'es' : /[^aeiou]y$/i.test(name) ? name.slice(0, -1) + 'ies' : /(Wolf)$/.test(name) ? name.slice(0, -1) + 'ves' : name + 's';
+  const parts = counts.map(c => {
+    const lower = c.name.toLowerCase();
+    if(c.n === 1) return (/^[aeiou]/.test(lower) ? 'an ' : 'a ') + lower;
+    return (words[c.n] || c.n) + ' ' + plural(c.name).toLowerCase();
+  });
+  const list = parts.length === 1 ? parts[0] : parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
+  const many = monsters.length > 1;
+  let o = opener;
+  if(many){
+    o = o.replace(/ is$/, ' are').replace(/ waits$/, ' wait').replace(/ lurks$/, ' lurk')
+         .replace(/ moves$/, ' move').replace(/ comes$/, ' come').replace(/It\u2019s$/, 'They\u2019re');
+  }
+  return o + ' ' + list + '.';
+}
+
 const ENCOUNTER_HOOKS = [
   'You duck into a cave to escape the rain, cobwebs pulling at your boots. Before you know it, you\u2019re face to face with',
   'The old bridge creaks under your feet as fog rolls in off the water. From the mist emerges',
@@ -7051,7 +7348,8 @@ function buildEncounterCandidate(partySize, partyLevel, targetAdjustedXP, candid
   return { monsters, rawXP, adjustedXP, multiplier };
 }
 
-function generateEncounter(partySize, partyLevel, difficulty, includeHook){
+function generateEncounter(partySize, partyLevel, difficulty, includeHook, locationKey, includeLoot){
+  locationKey = locationKey || 'any';
   const diffIdx = DIFFICULTY_INDEX[difficulty];
   const targetLow = XP_THRESHOLDS[partyLevel][diffIdx] * partySize;
   const targetHigh = diffIdx < 3 ? XP_THRESHOLDS[partyLevel][diffIdx+1] * partySize : targetLow * 1.3;
@@ -7062,7 +7360,13 @@ function generateEncounter(partySize, partyLevel, difficulty, includeHook){
     (MONSTER_TIERS[primaryTier] || []).concat(MONSTER_TIERS[Math.max(1, primaryTier-1)] || [])
   ));
   const filteredCandidateNames = rawCandidateNames.filter(name => !MUNDANE_BEAST_EXCLUDE.has(name));
-  const candidateNames = filteredCandidateNames.length ? filteredCandidateNames : rawCandidateNames;
+  let candidateNames = filteredCandidateNames.length ? filteredCandidateNames : rawCandidateNames;
+  // Setting: only creatures that live there, as long as that leaves enough
+  // variety to build a fight from (otherwise fall back to the full list).
+  if(locationKey !== 'any'){
+    const local = candidateNames.filter(name => (MONSTER_ENVIRONMENTS[name] || []).includes(locationKey));
+    if(local.length >= 2) candidateNames = local;
+  }
 
   // Try several candidate compositions and keep whichever one's real,
   // fully-computed difficulty actually lands closest to what was asked for.
@@ -7086,22 +7390,16 @@ function generateEncounter(partySize, partyLevel, difficulty, includeHook){
 
   let hookText = null;
   if(includeHook){
-    const opener = pick(ENCOUNTER_HOOKS);
-    const uniqueNames = Array.from(new Set(monsters.map(m => m.name)));
-    let creatureText;
-    if(uniqueNames.length === 1 && monsters.length > 1){
-      creatureText = monsters.length + ' ' + uniqueNames[0] + (uniqueNames[0].endsWith('s') ? '' : 's');
-    } else if(uniqueNames.length === 1){
-      creatureText = 'a ' + uniqueNames[0].toLowerCase();
-    } else {
-      creatureText = uniqueNames.slice(0,-1).join(', ') + ' and ' + uniqueNames[uniqueNames.length-1];
-    }
-    hookText = opener + ' ' + creatureText + '.';
+    hookText = encounterHookText(pick(ENCOUNTER_HOOKS_BY_LOCATION[locationKey] || ENCOUNTER_HOOKS), monsters);
   }
+
+  const loot = includeLoot
+    ? generateLoot(partyLevel, ENCOUNTER_HOARD_BY_DIFFICULTY[resultDifficulty] || 'small', locationKey)
+    : null;
 
   return {
     partySize, partyLevel, requestedDifficulty: difficulty, resultDifficulty,
-    monsters, rawXP, adjustedXP, multiplier, hookText,
+    monsters, rawXP, adjustedXP, multiplier, hookText, location: locationKey, loot,
   };
 }
 
@@ -7831,7 +8129,7 @@ function renderSheet(c){
       '<button type="button" class="toolbar-btn" data-action="copy-text" id="copyTextBtn">Copy as Text</button>' +
       '<button type="button" class="toolbar-btn" data-action="export-pdf-character">Export as PDF</button>' +
       '<button type="button" class="toolbar-btn" data-action="share-character">Share</button>' +
-      '<button type="button" class="toolbar-btn" data-action="save-character" id="saveCharacterBtn">Save</button>' +
+      '<button type="button" class="toolbar-btn" data-action="save-character" id="saveCharacterBtn">Save to My Rolls</button>' +
       '<button type="button" class="toolbar-btn" data-action="send-to-tracker-character">Send to Tracker</button>' +
     '</div>' +
     '<div class="sheet">' +
@@ -7961,10 +8259,12 @@ function renderMonsterSheet(m){
       '<button type="button" class="toolbar-btn" data-action="copy-monster-text" id="copyMonsterTextBtn">Copy as Text</button>' +
       '<button type="button" class="toolbar-btn" data-action="export-pdf-monster">Export as PDF</button>' +
       '<button type="button" class="toolbar-btn" data-action="share-monster">Share</button>' +
-      '<button type="button" class="toolbar-btn" data-action="save-monster" id="saveMonsterBtn">Save</button>' +
+      '<button type="button" class="toolbar-btn" data-action="save-monster" id="saveMonsterBtn">Save to My Rolls</button>' +
       '<button type="button" class="toolbar-btn" data-action="send-to-tracker-monster">Send to Tracker</button>' +
     '</div>' +
-    '<div class="sheet">' + monsterStatBlockHTML(m) + '</div>';
+    '<div class="sheet">' + monsterStatBlockHTML(m) +
+      (m.loreHook ? '<div class="section" style="margin-bottom:0;"><h3 class="section-title">Lore Hook</h3><p class="hook">'+escapeHtml(m.loreHook)+'</p></div>' : '') +
+    '</div>';
 }
 
 const HOARD_LABELS = { small:'Small', medium:'Medium', large:'Large', huge:'Huge' };
@@ -7991,7 +8291,7 @@ function renderLootSheet(loot){
       '<button type="button" class="toolbar-btn" data-action="copy-loot-text" id="copyLootTextBtn">Copy as Text</button>' +
       '<button type="button" class="toolbar-btn" data-action="export-pdf-loot">Export as PDF</button>' +
       '<button type="button" class="toolbar-btn" data-action="share-loot">Share</button>' +
-      '<button type="button" class="toolbar-btn" data-action="save-loot" id="saveLootBtn">Save</button>' +
+      '<button type="button" class="toolbar-btn" data-action="save-loot" id="saveLootBtn">Save to My Rolls</button>' +
     '</div>' +
     '<div class="sheet">' +
       '<div class="sheet-header">' +
@@ -8613,10 +8913,12 @@ function characterFromSharePayload(d){
   };
 }
 
-function monsterToSharePayload(m){ return { name: m.name }; }
+function monsterToSharePayload(m){ return m.loreHook ? { name: m.name, loreHook: m.loreHook } : { name: m.name }; }
 function monsterFromSharePayload(d){
   if(!MONSTER_REGISTRY[d.name]) return null;
-  return Object.assign({ name: d.name }, MONSTER_REGISTRY[d.name]);
+  const m = Object.assign({ name: d.name }, MONSTER_REGISTRY[d.name]);
+  if(d.loreHook) m.loreHook = d.loreHook;
+  return m;
 }
 
 function lootToSharePayload(l){ return { level: l.level, hoardKey: l.hoardKey, gold: l.gold, items: l.items }; }
@@ -10291,6 +10593,7 @@ const monsterRollBtn = document.getElementById('monsterRollBtn');
 const monsterSealLabel = document.getElementById('monsterSealLabel');
 let selectedTier = 'any';
 let selectedMonsterLocation = 'any';
+let includeMonsterHook = true;
 let currentMonster = null;
 let currentMonsterRollId = null; // see currentCharacterRollId above for what this tracks and why
 
@@ -10308,12 +10611,20 @@ monsterLocationRow.addEventListener('click', (e) => {
   Array.from(monsterLocationRow.children).forEach(c => c.classList.toggle('active', c === chip));
 });
 
+document.getElementById('monsterHookRow').addEventListener('click', (e) => {
+  const chip = e.target.closest('.monster-hook-chip');
+  if(!chip) return;
+  includeMonsterHook = chip.getAttribute('data-hook') === 'yes';
+  Array.from(e.currentTarget.children).forEach(c => c.classList.toggle('active', c === chip));
+});
+
 monsterRollBtn.addEventListener('click', () => {
   monsterRollBtn.classList.add('stamping');
   monsterRollBtn.disabled = true;
   monsterSealLabel.textContent = 'Summoning…';
   setTimeout(() => {
     currentMonster = generateMonster(selectedTier, selectedMonsterLocation);
+    if(includeMonsterHook) currentMonster.loreHook = monsterLoreHook(currentMonster);
     currentMonsterRollId = null; // a freshly rolled monster isn't saved anywhere yet
     renderMonsterSheet(currentMonster);
     monsterSealLabel.textContent = 'Strike again';
@@ -10354,6 +10665,11 @@ function monsterToText(m){
     lines.push('');
     lines.push('LEGENDARY ACTIONS');
     m.legendary.forEach(t => lines.push(t.name+'. '+t.desc));
+  }
+  if(m.loreHook){
+    lines.push('');
+    lines.push('LORE HOOK');
+    lines.push(m.loreHook);
   }
   return lines.join('\n');
 }
@@ -10538,6 +10854,8 @@ const encRollBtn = document.getElementById('encRollBtn');
 const encSealLabel = document.getElementById('encSealLabel');
 let selectedEncDifficulty = 'medium';
 let includeEncHook = true;
+let selectedEncLocation = 'any';
+let includeEncLoot = false;
 let currentEncounter = null;
 let currentEncounterRollId = null; // see currentCharacterRollId above for what this tracks and why
 
@@ -10558,6 +10876,19 @@ encHookRow.addEventListener('click', (e) => {
   Array.from(encHookRow.children).forEach(c => c.classList.toggle('active', c === chip));
 });
 
+document.getElementById('encLocationRow').addEventListener('click', (e) => {
+  const chip = e.target.closest('.location-chip');
+  if(!chip) return;
+  selectedEncLocation = chip.getAttribute('data-location');
+  Array.from(e.currentTarget.children).forEach(c => c.classList.toggle('active', c === chip));
+});
+document.getElementById('encLootRow').addEventListener('click', (e) => {
+  const chip = e.target.closest('.enc-loot-chip');
+  if(!chip) return;
+  includeEncLoot = chip.getAttribute('data-loot') === 'yes';
+  Array.from(e.currentTarget.children).forEach(c => c.classList.toggle('active', c === chip));
+});
+
 encRollBtn.addEventListener('click', () => {
   encRollBtn.classList.add('stamping');
   encRollBtn.disabled = true;
@@ -10565,7 +10896,7 @@ encRollBtn.addEventListener('click', () => {
   const partySize = parseInt(encPartySizeSlider.value, 10);
   const partyLevel = parseInt(encPartyLevelSlider.value, 10);
   setTimeout(() => {
-    currentEncounter = generateEncounter(partySize, partyLevel, selectedEncDifficulty, includeEncHook);
+    currentEncounter = generateEncounter(partySize, partyLevel, selectedEncDifficulty, includeEncHook, selectedEncLocation, includeEncLoot);
     currentEncounterRollId = null; // a freshly rolled encounter isn't saved anywhere yet
     renderEncounterSheet(currentEncounter);
     encSealLabel.textContent = 'Strike again';
@@ -10577,7 +10908,7 @@ encRollBtn.addEventListener('click', () => {
 function renderEncounterSheet(enc){
   const el = document.getElementById('encSheetContainer');
   const partyWord = enc.partySize === 1 ? 'a solo' : 'a party of ' + enc.partySize;
-  const title = 'A ' + enc.resultDifficulty + ' encounter for ' + partyWord + ' level ' + enc.partyLevel + (enc.partySize > 1 ? 's' : '');
+  const title = 'A ' + enc.resultDifficulty + (enc.location && enc.location !== 'any' ? ' ' + enc.location : '') + ' encounter for ' + partyWord + ' level ' + enc.partyLevel + (enc.partySize > 1 ? 's' : '');
 
   // Group identical monsters so we show one stat block per unique creature,
   // not the same block repeated for every copy.
@@ -10593,7 +10924,7 @@ function renderEncounterSheet(enc){
       '<button type="button" class="toolbar-btn" data-action="copy-enc-text" id="copyEncTextBtn">Copy as Text</button>' +
       '<button type="button" class="toolbar-btn" data-action="export-pdf-enc">Export as PDF</button>' +
       '<button type="button" class="toolbar-btn" data-action="share-enc">Share</button>' +
-      '<button type="button" class="toolbar-btn" data-action="save-enc" id="saveEncBtn">Save</button>' +
+      '<button type="button" class="toolbar-btn" data-action="save-enc" id="saveEncBtn">Save to My Rolls</button>' +
       '<button type="button" class="toolbar-btn" data-action="send-to-tracker">Send to Tracker</button>' +
     '</div>' +
     '<div class="sheet">' +
@@ -10614,6 +10945,14 @@ function renderEncounterSheet(enc){
     html += monsterStatBlockHTML(g.monster) + '</div>';
   });
 
+  if(enc.loot){
+    html += '<div class="section" style="border-top:1px solid var(--rule);padding-top:18px;margin:18px 0 0;">' +
+      '<h3 class="section-title">Treasure</h3>' +
+      '<p style="margin:0 0 10px;font-family:\'JetBrains Mono\', monospace;font-size:14px;"><b>'+enc.loot.gold.toLocaleString()+' gp</b> \u00b7 '+(HOARD_LABELS[enc.loot.hoardKey] || '')+' hoard</p>' +
+      '<div class="tag-row">' + enc.loot.items.map(lootItemBtn).join('') + '</div>' +
+    '</div>';
+  }
+
   html += '</div>';
   el.innerHTML = html;
 }
@@ -10621,7 +10960,7 @@ function renderEncounterSheet(enc){
 function encounterToText(enc){
   const partyWord = enc.partySize === 1 ? 'a solo' : 'a party of ' + enc.partySize;
   const lines = [];
-  lines.push('A ' + enc.resultDifficulty.toUpperCase() + ' ENCOUNTER for ' + partyWord + ' level ' + enc.partyLevel + (enc.partySize > 1 ? 's' : ''));
+  lines.push('A ' + enc.resultDifficulty.toUpperCase() + (enc.location && enc.location !== 'any' ? ' ' + enc.location.toUpperCase() : '') + ' ENCOUNTER for ' + partyWord + ' level ' + enc.partyLevel + (enc.partySize > 1 ? 's' : ''));
   lines.push('Adjusted XP: ' + enc.adjustedXP.toLocaleString());
   lines.push('');
   if(enc.hookText){ lines.push(enc.hookText); lines.push(''); }
@@ -10634,6 +10973,11 @@ function encounterToText(enc){
   groups.forEach(g => {
     lines.push((g.count > 1 ? g.count + 'x ' : '') + g.monster.name + ', CR ' + g.monster.cr + ', ' + g.monster.hp + ' HP, AC ' + g.monster.ac);
   });
+  if(enc.loot){
+    lines.push('');
+    lines.push('TREASURE: ' + enc.loot.gold.toLocaleString() + ' gp');
+    enc.loot.items.forEach(it => lines.push('- ' + it.name + (it.rarity ? ' (' + it.rarity + ')' : it.value ? ' (' + it.value + ' gp)' : '')));
+  }
   return lines.join('\n');
 }
 
@@ -10658,7 +11002,7 @@ function encounterToSharePayload(enc){
     requestedDifficulty: enc.requestedDifficulty, resultDifficulty: enc.resultDifficulty,
     monsterNames: enc.monsters.map(m => m.name),
     rawXP: enc.rawXP, adjustedXP: enc.adjustedXP, multiplier: enc.multiplier,
-    hookText: enc.hookText,
+    hookText: enc.hookText, location: enc.location || 'any', loot: enc.loot || null,
   };
 }
 function encounterFromSharePayload(d){
@@ -10668,13 +11012,17 @@ function encounterFromSharePayload(d){
     partySize: d.partySize, partyLevel: d.partyLevel,
     requestedDifficulty: d.requestedDifficulty, resultDifficulty: d.resultDifficulty,
     monsters, rawXP: d.rawXP, adjustedXP: d.adjustedXP, multiplier: d.multiplier,
-    hookText: d.hookText,
+    hookText: d.hookText, location: d.location || 'any', loot: d.loot || null,
   };
 }
 
 document.getElementById('encSheetContainer').addEventListener('click', (e) => {
   const actionBtn = e.target.closest('[data-action]');
-  if(!actionBtn) return;
+  if(!actionBtn){
+    const tag = e.target.closest('[data-kind]');
+    if(tag) handleTagClick(tag.getAttribute('data-kind'), tag.getAttribute('data-name'));
+    return;
+  }
   const action = actionBtn.getAttribute('data-action');
   if(action === 'copy-enc-text') copyEncText();
   else if(action === 'export-pdf-enc') exportSheetAsPDF('encSheetContainer', currentEncounter ? ('encounter-'+currentEncounter.resultDifficulty+'-lvl'+currentEncounter.partyLevel) : 'encounter', actionBtn);
@@ -10704,6 +11052,25 @@ let currentTurnId = null;
 let roundNumber = 1;
 let nextCombatantId = 1;
 let selectedTrackerRole = 'monster';
+
+// The tracker keeps the current combat in this browser, so it survives moving
+// between tools (each tool is its own page) and closing the tab, until Reset.
+const TRACKER_STORAGE_KEY = 'tracker-state-v1';
+function saveTrackerState(){
+  try{ localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify({ combatants, currentTurnId, roundNumber, nextCombatantId })); }
+  catch(e){ /* storage unavailable (private mode etc.), non-fatal */ }
+}
+(function loadTrackerState(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(TRACKER_STORAGE_KEY) || 'null');
+    if(saved && Array.isArray(saved.combatants)){
+      combatants = saved.combatants;
+      currentTurnId = saved.currentTurnId != null ? saved.currentTurnId : null;
+      roundNumber = saved.roundNumber || 1;
+      nextCombatantId = saved.nextCombatantId || (Math.max(0, ...combatants.map(c => c.id || 0)) + 1);
+    }
+  }catch(e){ /* corrupt or unavailable storage: start with an empty tracker */ }
+})();
 
 function escapeHtml(str){
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -10827,6 +11194,7 @@ function removeCombatant(id){
 }
 
 function renderTracker(){
+  saveTrackerState();
   trackerRoundLabel.textContent = roundNumber;
   if(!combatants.length){
     trackerListContainer.innerHTML = '<div class="sheet-empty"><span class="glyph">&#9876;</span><h2>No combatants yet</h2><p>Add everyone in the fight on the left, then hit Next Turn to step through the round.</p></div>';
@@ -11247,7 +11615,7 @@ function showBestiaryDetail(name){
   bestiaryListContainer.innerHTML =
     '<div class="sheet-toolbar">' +
       '<button type="button" class="toolbar-btn" data-action="bestiary-back">\u2190 Back to list</button>' +
-      '<button type="button" class="toolbar-btn" data-action="save-bestiary" data-bestiary-name="'+name+'">Save</button>' +
+      '<button type="button" class="toolbar-btn" data-action="save-bestiary" data-bestiary-name="'+name+'">Save to My Rolls</button>' +
       '<button type="button" class="toolbar-btn" data-action="send-to-tracker-bestiary" data-bestiary-name="'+name+'">Send to Tracker</button>' +
     '</div>' +
     '<div class="sheet">' + monsterStatBlockHTML(Object.assign({name}, m)) + '</div>';
@@ -11499,7 +11867,7 @@ function saveCurrentRollToAccount(type, obj, buttonEl){
       }).then((docRef) => { setCurrentRollId(type, docRef.id); });
 
   savePromise.then(() => {
-    if(buttonEl){ buttonEl.textContent = 'Saved!'; setTimeout(() => { buttonEl.textContent = originalText; buttonEl.disabled = false; }, 1500); }
+    if(buttonEl){ buttonEl.textContent = 'Saved to My Rolls!'; setTimeout(() => { buttonEl.textContent = originalText; buttonEl.disabled = false; }, 1800); }
   }).catch((e) => {
     console.error('Save failed', e);
     if(buttonEl){ buttonEl.textContent = 'Failed'; setTimeout(() => { buttonEl.textContent = originalText; buttonEl.disabled = false; }, 1500); }
@@ -12005,3 +12373,6 @@ myrollsListContainer.addEventListener('keydown', (e) => {
     renderMyRollsList();
   }
 });
+
+// Draw any combat restored from an earlier visit (see loadTrackerState).
+renderTracker();

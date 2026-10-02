@@ -1131,7 +1131,7 @@
   }
   .lock-chip.locked::before{ content: '\1F512 '; }
 
-  .spell-level-chip.active, .spell-class-chip.active, .enc-diff-chip.active, .enc-hook-chip.active, .lock-chip.active, .hoard-chip.active{
+  .spell-level-chip.active, .spell-class-chip.active, .enc-diff-chip.active, .enc-hook-chip.active, .monster-hook-chip.active, .enc-loot-chip.active, .lock-chip.active, .hoard-chip.active{
     background: var(--accent-hi);
     border-color: var(--accent-hi);
     color: #2B2013;
@@ -1230,6 +1230,7 @@
   /* ---------- Sheet toolbar (copy / print) ---------- */
   .sheet-toolbar{
     display:flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 18px;
   }
@@ -1241,6 +1242,7 @@
     color: var(--cream-text);
     padding: 6px 12px;
     border-radius: 6px;
+    white-space: nowrap;
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
   }
@@ -1576,6 +1578,14 @@
     margin: 0 0 10px;
     font-size:22px;
   }
+  /* Plain text links (no class of their own): accent colour instead of the
+     browser's default dark blue, which is unreadable on the dark page. */
+  a:not([class]){ color: var(--brass-bright); text-underline-offset: 2px; }
+  a:not([class]):hover{ color: var(--cream-text); }
+  .sheet a:not([class]), .modal-panel a:not([class]){ color: var(--accent-ink); }
+  .sheet a:not([class]):hover, .modal-panel a:not([class]):hover{ color: var(--accent-ink-deep); }
+  .privacy-body a:not([class]){ color: var(--sigil-red); }
+
   .tool-about{
     grid-column: 1 / -1;
     max-width: 760px;
@@ -2648,6 +2658,14 @@
       </div>
     </div>
 
+    <div class="lock-block" style="margin-top:16px;">
+      <p class="lock-heading">Flavor</p>
+      <div class="lock-row" id="monsterHookRow">
+        <button type="button" class="lock-chip monster-hook-chip active" data-hook="yes">Include a lore hook</button>
+        <button type="button" class="lock-chip monster-hook-chip" data-hook="no">Stat block only</button>
+      </div>
+    </div>
+
     <div class="seal-wrap">
       <button class="seal-btn" id="monsterRollBtn" aria-label="Forge a new monster">
         <svg class="d20-face" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2680,6 +2698,7 @@
     <p>Monster Forge pulls a full 5th Edition stat block from a library of 137 creatures, spanning every challenge rating from a common rat right up to the Tarrasque. Each one comes with armor class, hit points, speed, ability scores, saving throws, skills, traits, and actions, exactly as you'd find in a stat block from the Monster Manual.</p>
     <p>It's aimed at Dungeon Masters running an encounter on short notice, whether that's a monster the party stumbles into outside a planned fight or a stat block you need pulled up fast mid-session. Pick a threat tier that roughly matches your party's level, strike the seal, and you get a creature ready to drop straight into the fight.</p>
     <h4>A few common questions</h4>
+    <p><strong>How do I pick the right threat tier for my party?</strong> Start from your party&rsquo;s level: for four characters, a single monster with a challenge rating close to their level is roughly a medium fight. For example, four level 5 characters would find a CR 5 monster a fair fight, so pick Low (CR 2&ndash;5). For a tougher boss, step up to Mid (CR 6&ndash;10), where a CR 8 is a hard fight and a CR 9 is deadly. If you&rsquo;re using several monsters at once, step down a tier, since numbers make a fight harder. For an exact difficulty for your party, use <a href="/encounter-generator/">Encounters</a>.</p>
     <p><strong>How are the threat tiers grouped?</strong> Monsters are split into five tiers by challenge rating, so you can roll something that actually fits the encounter rather than getting a random spread across every difficulty.</p>
     <p><strong>Can I see a monster's full stat block, not just a summary?</strong> Yes. Every roll gives you the complete block, including all of its actions, not a shortened version.</p>
     <p><strong>Is this useful outside of combat?</strong> It works well for quickly reading a creature's traits and lore hooks too, not just its numbers, if you want a monster for a scene rather than a fight.</p>
@@ -2797,6 +2816,34 @@
         <button type="button" class="lock-chip enc-diff-chip active" data-diff="medium">Medium</button>
         <button type="button" class="lock-chip enc-diff-chip" data-diff="hard">Hard</button>
         <button type="button" class="lock-chip enc-diff-chip" data-diff="deadly">Deadly</button>
+      </div>
+    </div>
+
+    <div class="lock-block" style="margin-top:16px;">
+      <p class="lock-heading">Setting</p>
+      <div class="lock-row" id="encLocationRow">
+        <button type="button" class="lock-chip location-chip active" data-location="any">Any</button>
+        <button type="button" class="lock-chip location-chip" data-location="forest">Forest</button>
+        <button type="button" class="lock-chip location-chip" data-location="mountain">Mountain</button>
+        <button type="button" class="lock-chip location-chip" data-location="hill">Hill</button>
+        <button type="button" class="lock-chip location-chip" data-location="grassland">Grassland</button>
+        <button type="button" class="lock-chip location-chip" data-location="swamp">Swamp</button>
+        <button type="button" class="lock-chip location-chip" data-location="desert">Desert</button>
+        <button type="button" class="lock-chip location-chip" data-location="arctic">Arctic</button>
+        <button type="button" class="lock-chip location-chip" data-location="coastal">Coastal</button>
+        <button type="button" class="lock-chip location-chip" data-location="underwater">Underwater</button>
+        <button type="button" class="lock-chip location-chip" data-location="underdark">Underdark</button>
+        <button type="button" class="lock-chip location-chip" data-location="urban">Urban</button>
+        <button type="button" class="lock-chip location-chip" data-location="dungeon">Dungeon</button>
+        <button type="button" class="lock-chip location-chip" data-location="planar">Planar</button>
+      </div>
+    </div>
+
+    <div class="lock-block" style="margin-top:16px;">
+      <p class="lock-heading">Treasure</p>
+      <div class="lock-row" id="encLootRow">
+        <button type="button" class="lock-chip enc-loot-chip" data-loot="yes">Add treasure</button>
+        <button type="button" class="lock-chip enc-loot-chip active" data-loot="no">No treasure</button>
       </div>
     </div>
 
@@ -3068,7 +3115,7 @@
     <p>Initiative Tracker keeps combat organized once a fight actually starts. Add every combatant, players and monsters alike, with their initiative, hit points, and armor class, and it sorts the whole group into turn order automatically. Next Turn steps you through each combatant in sequence and moves to the next round once everyone has gone.</p>
     <p>Each combatant's hit points can be adjusted directly during the fight, and any of the standard conditions, such as poisoned, prone, or restrained, can be attached and removed as the battle changes. Monster names entered here autocomplete against the full Monster Forge library, filling in hit points and armor class for you.</p>
     <h4>A few common questions</h4>
-    <p><strong>Does it save my combat if I leave the page?</strong> No, the tracker is a live scratchpad for the current fight and resets when you refresh or start a new combat, rather than being saved between sessions.</p>
+    <p><strong>Does it save my combat if I leave the page?</strong> Yes. The tracker keeps your combat in this browser while you move between tools, add monsters from Monster Forge or Encounters, or even close the tab. It only clears when you press Reset.</p>
     <p><strong>Can I add a monster straight from Monster Forge or Encounters?</strong> Yes, both tools have a Send to Tracker option that loads the result in with initiative already rolled.</p>
     <p><strong>What happens when a combatant's HP hits zero?</strong> Their HP is shown clearly at zero so you can track them as down, though it's left to you to decide how that plays out at the table.</p>
   </section>
