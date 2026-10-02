@@ -484,7 +484,7 @@ const SPELL_REGISTRY = {
   'Fireball': SP(3,'Evocation','1 action','150 feet','V, S, M','Instantaneous','A bright streak flashes to a point you choose, then blossoms into a 20-foot-radius explosion, dealing 8d6 fire damage to each creature there on a failed Dexterity save, half as much on a success. Flammable objects there ignite.','The damage increases by 1d6 for each slot level above 3rd.'),
   'Lightning Bolt': SP(3,'Evocation','1 action','Self (100-foot line)','V, S, M','Instantaneous','A stroke of lightning forming a line 100 feet long and 5 feet wide blasts out from you, dealing 8d6 lightning damage to each creature there on a failed Dexterity save, half as much on a success.','The damage increases by 1d6 for each slot level above 3rd.'),
   'Haste': SP(3,'Transmutation','1 action','30 feet','V, S, M','Concentration, up to 1 minute','A willing creature\u2019s speed doubles, it gains +2 AC, advantage on Dexterity saves, and an additional action limited to attack, dash, disengage, hide, or use an object.'),
-  'Counterspell': SP(3,'Reaction','60 feet','1 reaction','S','Instantaneous','You attempt to interrupt a creature in the process of casting a spell. If the interrupted spell is 3rd level or lower it fails automatically; otherwise you make an ability check to determine success.'),
+  'Counterspell': SP(3,'Abjuration','1 reaction','60 feet','S','Instantaneous','You attempt to interrupt a creature in the process of casting a spell. If the interrupted spell is 3rd level or lower it fails automatically; otherwise you make an ability check to determine success.'),
   'Fly': SP(3,'Transmutation','1 action','Touch','V, S, M','Concentration, up to 10 minutes','You touch a willing creature, granting it a flying speed of 60 feet for the duration.'),
   'Hunger of Hadar': SP(3,'Conjuration','1 action','150 feet','V, S, M','Concentration, up to 1 minute','A 20-foot-radius zone of cold, dark emptiness appears. Anything there is lightly obscured, and any creature there at the start of its turn takes 2d6 cold damage and is attacked by grasping tendrils.'),
   'Aura of Vitality': SP(3,'Evocation','1 action','Self','V','Concentration, up to 1 minute','Healing energy radiates from you. As a bonus action each turn you can restore 2d6 hit points to a creature within 30 feet.'),
@@ -11576,7 +11576,8 @@ function renderSpellbookList(filterText, levelFilter, classFilter, schoolFilter)
   html += '</div>';
   spellbookListContainer.innerHTML = html;
 }
-renderSpellbookList('', 'all', 'all', 'all');
+// Spell pages (/spells/<name>/) arrive with their entry already drawn; keep it.
+if(!spellbookListContainer.hasAttribute('data-prerendered')) renderSpellbookList('', 'all', 'all', 'all');
 
 spellSearchInput.addEventListener('input', () => {
   renderSpellbookList(spellSearchInput.value, spellLevelFilter, spellClassFilter, spellSchoolFilter);
@@ -11668,7 +11669,8 @@ function renderBestiaryList(filterText, typeFilter){
 
   bestiaryListContainer.innerHTML = '<div class="landing-grid" style="margin-bottom:0;">' + names.map(bestiaryEntryBtn).join('') + '</div>';
 }
-renderBestiaryList('', 'all');
+// Monster pages (/monsters/<name>/) arrive with their stat block already drawn; keep it.
+if(!bestiaryListContainer.hasAttribute('data-prerendered')) renderBestiaryList('', 'all');
 
 function showBestiaryDetail(name){
   const m = MONSTER_REGISTRY[name];
