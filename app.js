@@ -7416,6 +7416,10 @@ function classLevelOf(c, name){
   if(c.multiclass && c.multiclass.cls2 && c.multiclass.cls2.name === name) return c.multiclass.level2;
   return 0;
 }
+function subclassText(cls, sub, label, html){
+  if(sub) return label+': '+(html ? '<b>'+sub+'</b>' : sub);
+  return label+': chosen at '+cls.name+' level '+cls.subclassLevel;
+}
 function hasSubclass(c, name){ return c.subclass === name || !!(c.multiclass && c.multiclass.subclass2 === name); }
 function hasFeat(c, name){ return (c.feats || []).includes(name); }
 function gearNamesOf(c){ return (c.gear || []).map(g => g.name); }
@@ -8116,11 +8120,14 @@ function renderSheet(c){
   const mc = c.multiclass;
   refreshDerivedStats(c);
   sheetCharacter = c;
-  const subclassLine = c.subclass ? (c.cls.subclassLabel+': <b>'+c.subclass+'</b>') : (c.cls.subclassLabel+' not yet chosen');
-  const subclassLine2 = mc && mc.subclass2 ? (mc.cls2.subclassLabel+': <b>'+mc.subclass2+'</b>') : (mc ? mc.cls2.subclassLabel+' not yet chosen' : '');
+  // Always "Subclass", not each class's own term (Sacred Oath, Ranger Conclave...),
+  // so people can find it at a glance. Multiclass sheets say whose subclass it is.
+  const subclassLine = subclassText(c.cls, c.subclass, mc ? c.cls.name+' subclass' : 'Subclass', true);
+  const subclassLine2 = mc ? subclassText(mc.cls2, mc.subclass2, mc.cls2.name+' subclass', true) : '';
+  const withSub = (name, sub) => sub ? name+' ('+sub+')' : name;
   const classLabel = mc
-    ? c.cls.name+' '+mc.level1+' / '+mc.cls2.name+' '+mc.level2
-    : c.cls.name;
+    ? withSub(c.cls.name+' '+mc.level1, c.subclass)+' / '+withSub(mc.cls2.name+' '+mc.level2, mc.subclass2)
+    : withSub(c.cls.name, c.subclass);
 
   el.innerHTML =
     '<div class="sheet-toolbar">' +
@@ -8523,7 +8530,8 @@ function characterToText(c){
   }
   lines.push('CLASS');
   lines.push(c.cls.profs);
-  lines.push(c.subclass ? (c.cls.subclassLabel+': '+c.subclass) : (c.cls.subclassLabel+' not yet chosen'));
+  lines.push(subclassText(c.cls, c.subclass, c.multiclass ? c.cls.name+' subclass' : 'Subclass', false));
+  if(c.multiclass) lines.push(subclassText(c.multiclass.cls2, c.multiclass.subclass2, c.multiclass.cls2.name+' subclass', false));
   lines.push('');
   lines.push('SKILLS');
   lines.push(c.skills.map(s => { const r = sheetSkill(c, s); return s+' '+fmtMod(r.total)+(r.expert ? ' (expertise)' : ''); }).join(', '));
