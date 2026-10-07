@@ -58,16 +58,50 @@ const RACES = [
 ];
 
 const NAME_PARTS = {
-  Human: { first:['Rowan','Elara','Bran','Mireille','Corvin','Yusuf','Talia','Osric','Marren','Idris','Selwyn','Gwenna','Aldric','Briony','Cassian','Delphine','Edmund','Fenna','Garrick','Halla','Ivo','Jessamine','Kellan','Lior','Magda','Norrin','Odalys','Percival','Quenby','Ragnar','Sabine','Tobias'], last:['Ashford','Vale','Marrow','Sterling','Blackwood','Thorne','Ridley','Nash','Harrow','Winters','Fairweather','Duskwood','Halloway','Merrick','Osgood','Wren','Castellan','Larkspur'] },
-  Elf: { first:['Faelar','Silvani','Erevan','Thia','Caelynn','Lucan','Aravae','Miriel','Thalanil','Elenwe','Galinndan','Ilyrae','Naivara','Quildor','Sylvaine','Theriad','Varis','Ylenna','Aramil','Beiro','Caelith','Drannor','Enna','Filsaelin','Immeral','Lamlis'], last:['Moonwhisper','Silverleaf','Duskwalker','Starsong','Nightbreeze','Amakiir','Galanodel','Holimion','Liadon','Meliamne','Siannodel','Xiloscient','Nightwind','Everbloom','Farwind','Thistledown'] },
-  Dwarf: { first:['Thorin','Brenna','Durgan','Kildra','Bofur','Yorvik','Marta','Gundren','Balin','Dagna','Eberk','Fara','Grista','Harbek','Ilde','Jorunn','Kathra','Loris','Morgran','Nara','Oskar','Rurik','Sannl','Torbin','Ulfgar','Vistra'], last:['Ironfist','Stonehammer','Battlehorn','Gravelbeard','Anvilheart','Balderk','Dankil','Fireforge','Loderr','Rumnaheim','Strakeln','Torunn','Ungart','Brawnanvil','Deepdelve','Ironshoulder'] },
-  Halfling: { first:['Pip','Rosie','Milo','Tansy','Corrin','Willa','Bram','Dova','Alton','Bree','Cade','Dell','Euphemia','Finnan','Gilly','Harmon','Ivy','Jasper','Lavender','Merric','Nedda','Ottilie','Perrin','Quill','Rilla','Sander','Tessaly','Vinnie'], last:['Underbough','Goodbarrel','Greenbottle','Tealeaf','Brushgather','Highhill','Leagallow','Tosscobble','Sweetwater','Warmwater','Applebrook','Cobblecrumb','Fennelbrook','Mossfoot','Pennywhistle','Thistlewool'] },
-  'Half-Orc': { first:['Grosh','Uldar','Kesh','Thraga','Vharn','Mogra','Drask','Yena','Argok','Bruga','Dush','Grask','Karga','Muzgash','Ovak','Ruska','Shagrath','Thokk','Urzul','Voth','Yagra','Zurga'], last:['Skullcrusher','Ironhide','Bloodfang','Grimtusk','Ashclaw','Bonegrinder','Deathstrike','Ironjaw','Rockfist','Warhide','Blackscar','Direfang','Grimhowl','Stonecrush'] },
-  'Half-Elf': { first:['Sariel','Devon','Aelith','Nyra','Corin','Lyssa','Aldous','Branwen','Cyrus','Elowen','Finnian','Isolde','Jarek','Kestrel','Liora','Marek','Nissa','Orin','Perrivale','Quinlan','Rosalind','Sylas'], last:['Faewood','Brightwater','Amberly','Rosewind','Duskharrow','Emberfall','Greywillow','Hallowmere','Larkwood','Oakenshade','Silverbrook','Thornwild'] },
-  Tiefling: { first:['Kairon','Lilith','Zephyrine','Malchor','Seraphine','Damakos','Akmenos','Beleth','Carrion','Damaia','Ekemon','Faux','Ishtara','Kallista','Leucis','Mordai','Nirith','Orianna','Puriel','Rieta','Sorrow','Therai','Vess','Zariel'], last:['Ashborn','Duskmere','Hellcrest','Cinderfall','Bloodmark','Grimveil','Nightsworn','Ravenshade','Shadowend','Soulrend','Emberthorn','Wraithmoor'] },
-  Dragonborn: { first:['Vraxis','Torinn','Kriv','Sethra','Balasar','Nemmonis','Arjhan','Bharash','Donaar','Ghesh','Heskan','Kava','Medrash','Nadarr','Pandjed','Rhogar','Shamash','Tarhun','Verthax','Zhorvakk'], last:['Emberscale','Stormclaw','Ironwing','Cinderscale','Clethtinthiallor','Daardendrian','Fenkenkabradon','Kepeshkmolik','Prexijandilin','Verthisathurgiesh','Yarjerit','Ashscale','Duskwing','Stormtail'] },
-  Gnome: { first:['Fizwick','Nyla','Boddynock','Ellywick','Zook','Fennela','Alston','Brocc','Dimble','Eldon','Fonkin','Gimble','Ivo','Jebeddo','Kellen','Loopmottin','Namfoodle','Orryn','Podge','Roondar','Seebo','Tinnil','Wrenn','Zanna'], last:['Cogsprocket','Tinkertop','Sparkwrench','Nackle','Fizzlebang','Gearwhistle','Nackledorf','Peeblespout','Rocketflint','Timbers','Turnbuckle','Bramblefoot'] },
+  Human: { first:["Rowan", "Elara", "Bran", "Mireille", "Corvin", "Yusuf", "Talia", "Osric", "Marren", "Idris", "Selwyn", "Gwenna", "Aldric", "Briony", "Cassian", "Delphine", "Edmund", "Fenna", "Garrick", "Halla", "Ivo", "Jessamine", "Kellan", "Lior", "Magda", "Norrin", "Odalys", "Percival", "Quenby", "Ragnar", "Sabine", "Tobias", "Anselm", "Beatrix", "Cedric", "Dariya", "Emeric", "Farah", "Gideon", "Hester", "Ilsa", "Jorah", "Katrin", "Leopold", "Maelis", "Nikolai", "Oona", "Pavel", "Rosalie", "Soren", "Tamsin", "Ulric", "Verena", "Wystan", "Ximena", "Yaro", "Zofia", "Adair", "Bastian", "Celeste", "Dmitri", "Esme", "Florian", "Greta", "Hamish", "Imogen", "Joaquin", "Kasimir", "Linnea", "Matthias", "Nadia", "Orrin", "Petra", "Ravi", "Saoirse", "Tiberius", "Una", "Viktor", "Wilhelmina", "Amara", "Bertram", "Calla", "Darius", "Evander", "Freya", "Gisela", "Hugo"],
+    last:["Ashford", "Vale", "Marrow", "Sterling", "Blackwood", "Thorne", "Ridley", "Nash", "Harrow", "Winters", "Fairweather", "Duskwood", "Halloway", "Merrick", "Osgood", "Wren", "Castellan", "Larkspur", "Aldercott", "Brightmore", "Crane", "Dunmere", "Everard", "Fallow", "Greaves", "Hartwell", "Ironside", "Kingsley", "Lockhart", "Mallory", "Northcott", "Oakridge", "Pembrook", "Quarrel", "Redmayne", "Stroud", "Tolliver", "Underhill", "Varga", "Westbrook", "Yardley", "Corvanis", "Delacroix", "Ostrava", "Rask", "Tamberlane"] },
+  Elf: { first:["Faelar", "Silvani", "Erevan", "Thia", "Caelynn", "Lucan", "Aravae", "Miriel", "Thalanil", "Elenwe", "Galinndan", "Ilyrae", "Naivara", "Quildor", "Sylvaine", "Theriad", "Varis", "Ylenna", "Aramil", "Beiro", "Caelith", "Drannor", "Enna", "Filsaelin", "Immeral", "Lamlis", "Adran", "Aelar", "Anastrianna", "Andraste", "Antinua", "Berrian", "Bethrynna", "Carric", "Ciaran", "Eldrin", "Felosial", "Hadarai", "Heian", "Ivellios", "Jelenneth", "Keyleth", "Leshanna", "Mialee", "Mindartis", "Paelias", "Peren", "Riardon", "Rolen", "Sariel", "Shanairra", "Shava", "Soveliss", "Thamior", "Tharivol", "Valanthe", "Vadania", "Xanaphia", "Aelindra", "Caladrel", "Faenya", "Ilphas", "Lathriel", "Nimrae", "Orlyth", "Saelihn", "Taeral", "Ulaire", "Vaeril", "Ylsandra", "Zaereth"],
+    last:["Moonwhisper", "Silverleaf", "Duskwalker", "Starsong", "Nightbreeze", "Amakiir", "Galanodel", "Holimion", "Liadon", "Meliamne", "Siannodel", "Xiloscient", "Nightwind", "Everbloom", "Farwind", "Thistledown", "Ilphelkiir", "Naïlo", "Brightwood", "Dawnstar", "Evenwood", "Featherfall", "Goldpetal", "Leafwhisper", "Mistvale", "Oakenheel", "Rainfall", "Sunmantle", "Swiftwind", "Tearsong", "Willowmere", "Windrivver"] },
+  Dwarf: { first:["Brenna", "Durgan", "Kildra", "Yorvik", "Marta", "Gundren", "Dagna", "Eberk", "Fara", "Grista", "Harbek", "Ilde", "Jorunn", "Kathra", "Loris", "Morgran", "Nara", "Oskar", "Rurik", "Sannl", "Torbin", "Ulfgar", "Vistra", "Adrik", "Alberich", "Amber", "Artin", "Audhild", "Baern", "Barendd", "Bardryn", "Brottor", "Darrak", "Delg", "Diesa", "Eldeth", "Falkrunn", "Fargrim", "Finellen", "Gardain", "Gunnloda", "Gurdis", "Helja", "Hlin", "Kildrak", "Liftrasa", "Mardred", "Orsik", "Rangrim", "Riswynn", "Taklinn", "Thoradin", "Torgga", "Traubon", "Travok", "Veit", "Vondal", "Agna", "Belgrum", "Borri", "Dorna", "Grimna", "Hargun", "Ingra", "Korgan", "Magni", "Ragna", "Skeld", "Ulla", "Vonna"],
+    last:["Ironfist", "Stonehammer", "Battlehorn", "Gravelbeard", "Anvilheart", "Balderk", "Dankil", "Fireforge", "Loderr", "Rumnaheim", "Strakeln", "Torunn", "Ungart", "Brawnanvil", "Deepdelve", "Ironshoulder", "Blackforge", "Coppervein", "Embermantle", "Flintcrag", "Goldhand", "Granitebrow", "Hammerfall", "Holderhek", "Kettlebrand", "Mithrilmane", "Orebreaker", "Steelbeard", "Stonebreaker", "Thunderhelm", "Trollbane", "Underforge"] },
+  Halfling: { first:["Pip", "Rosie", "Milo", "Tansy", "Corrin", "Willa", "Bram", "Dova", "Alton", "Bree", "Cade", "Dell", "Euphemia", "Finnan", "Gilly", "Harmon", "Ivy", "Jasper", "Lavender", "Merric", "Nedda", "Ottilie", "Perrin", "Quill", "Rilla", "Sander", "Tessaly", "Vinnie", "Andry", "Bertie", "Callie", "Cora", "Dimmy", "Eldon", "Errich", "Fidget", "Garret", "Hattie", "Jillian", "Kithri", "Lidda", "Lyle", "Maegan", "Myrna", "Nim", "Osborn", "Paela", "Poppy", "Portia", "Reed", "Roscoe", "Seraphina", "Shaena", "Tobin", "Trym", "Vani", "Verna", "Wellby", "Wendel", "Bilberry", "Clover", "Daisy", "Fennick", "Hob", "Marigold", "Nutmeg", "Odo", "Pansy", "Tuck"],
+    last:["Underbough", "Goodbarrel", "Greenbottle", "Tealeaf", "Brushgather", "Highhill", "Leagallow", "Tosscobble", "Sweetwater", "Warmwater", "Applebrook", "Cobblecrumb", "Fennelbrook", "Mossfoot", "Pennywhistle", "Thistlewool", "Bramblewick", "Butterbur", "Copperkettle", "Dewdrop", "Elderberry", "Fairbairn", "Hilltopple", "Honeypot", "Kettlewhistle", "Littlefoot", "Merryweather", "Nimblefingers", "Oakbottom", "Puddlefoot", "Quickstep", "Shortbuckle", "Tumbleweed", "Wildheart"] },
+  "Half-Orc": { first:["Grosh", "Uldar", "Kesh", "Thraga", "Vharn", "Mogra", "Drask", "Yena", "Argok", "Bruga", "Dush", "Grask", "Karga", "Muzgash", "Ovak", "Ruska", "Shagrath", "Thokk", "Urzul", "Voth", "Yagra", "Zurga", "Arha", "Baggi", "Dench", "Emen", "Engong", "Feng", "Gell", "Henk", "Holg", "Imsh", "Keth", "Kansif", "Krusk", "Mhurren", "Myev", "Neega", "Ownka", "Shautha", "Sutha", "Vola", "Volen", "Yevelda", "Brakka", "Durza", "Gorna", "Hruk", "Krag", "Morka", "Rakha", "Skarn", "Torga", "Vrask"],
+    last:["Skullcrusher", "Ironhide", "Bloodfang", "Grimtusk", "Ashclaw", "Bonegrinder", "Deathstrike", "Ironjaw", "Rockfist", "Warhide", "Blackscar", "Direfang", "Grimhowl", "Stonecrush", "Axebreaker", "Brokentooth", "Cleaver", "Doomhowl", "Gorefist", "Hammerjaw", "Ironbrow", "Redtusk", "Scarback", "Splitshield", "Thunderstride", "Wolfsbane"] },
+  "Half-Elf": { first:["Sariel", "Devon", "Aelith", "Nyra", "Corin", "Lyssa", "Aldous", "Branwen", "Cyrus", "Elowen", "Finnian", "Isolde", "Jarek", "Kestrel", "Liora", "Marek", "Nissa", "Orin", "Perrivale", "Quinlan", "Rosalind", "Sylas", "Aerin", "Brielle", "Calen", "Dariel", "Eiran", "Faelan", "Gwyneth", "Halien", "Ilaria", "Jorel", "Kaelen", "Lirien", "Maeve", "Nerian", "Oriel", "Phaedra", "Rhian", "Seren", "Tavian", "Vaelith", "Wynne", "Ysolde"],
+    last:["Faewood", "Brightwater", "Amberly", "Rosewind", "Duskharrow", "Emberfall", "Greywillow", "Hallowmere", "Larkwood", "Oakenshade", "Silverbrook", "Thornwild", "Ashgrove", "Fairhollow", "Glimmerdale", "Hollowbrook", "Mistral", "Moonbrook", "Starfield", "Westwind", "Whitlock", "Wildmere"] },
+  Tiefling: { first:["Kairon", "Lilith", "Zephyrine", "Malchor", "Seraphine", "Damakos", "Akmenos", "Beleth", "Carrion", "Damaia", "Ekemon", "Faux", "Ishtara", "Kallista", "Leucis", "Mordai", "Nirith", "Orianna", "Puriel", "Rieta", "Sorrow", "Therai", "Vess", "Zariel", "Amnon", "Azazel", "Barakas", "Bryseis", "Criella", "Iados", "Kairos", "Lerissa", "Makaria", "Melech", "Morthos", "Nemeia", "Pelaios", "Skamos", "Valafar", "Xalvor", "Ysmera", "Zethra", "Abraxas", "Caim", "Ezra", "Halphas", "Ianthe", "Moloch", "Naamah", "Orobas", "Raum", "Vepar"],
+    last:["Ashborn", "Duskmere", "Hellcrest", "Cinderfall", "Bloodmark", "Grimveil", "Nightsworn", "Ravenshade", "Shadowend", "Soulrend", "Emberthorn", "Wraithmoor", "Ashenbrand", "Brimstone", "Coalheart", "Darkwater", "Embervale", "Hollowmark", "Infernis", "Sablethorn", "Smoulder", "Thornbrand", "Vesperine"] },
+  Dragonborn: { first:["Vraxis", "Torinn", "Kriv", "Sethra", "Balasar", "Nemmonis", "Arjhan", "Bharash", "Donaar", "Ghesh", "Heskan", "Kava", "Medrash", "Nadarr", "Pandjed", "Rhogar", "Shamash", "Tarhun", "Verthax", "Zhorvakk", "Akra", "Biri", "Daar", "Harann", "Jheri", "Korinn", "Mishann", "Nala", "Perra", "Raiann", "Sora", "Surina", "Thava", "Uadjit", "Ashkar", "Draxen", "Kalazar", "Mezzar", "Oraxa", "Rhezzan", "Szarra", "Tazhar", "Vyrka", "Zorvash"],
+    last:["Emberscale", "Stormclaw", "Ironwing", "Cinderscale", "Clethtinthiallor", "Daardendrian", "Fenkenkabradon", "Kepeshkmolik", "Prexijandilin", "Verthisathurgiesh", "Yarjerit", "Ashscale", "Duskwing", "Stormtail", "Delmirev", "Drachedandion", "Kerrhylon", "Kimbatuul", "Linxakasendalor", "Myastan", "Nemmonis", "Norixius", "Ophinshtalajiir", "Shestendeliath", "Turnuroth"] },
+  Gnome: { first:["Fizwick", "Nyla", "Boddynock", "Ellywick", "Zook", "Fennela", "Alston", "Brocc", "Dimble", "Eldon", "Fonkin", "Gimble", "Ivo", "Jebeddo", "Kellen", "Loopmottin", "Namfoodle", "Orryn", "Podge", "Roondar", "Seebo", "Tinnil", "Wrenn", "Zanna", "Alvyn", "Bimpnottin", "Breena", "Caramip", "Carlin", "Donella", "Duvamil", "Ella", "Erky", "Frug", "Glim", "Lilli", "Lorilla", "Mardnab", "Nissa", "Nodd", "Oda", "Orla", "Roywyn", "Shamil", "Sindri", "Tana", "Waywocket", "Warryn", "Bixby", "Fibble", "Nim", "Quibble", "Tibbet", "Wizzle"],
+    last:["Cogsprocket", "Tinkertop", "Sparkwrench", "Nackle", "Fizzlebang", "Gearwhistle", "Nackledorf", "Peeblespout", "Rocketflint", "Timbers", "Turnbuckle", "Bramblefoot", "Beren", "Daergel", "Folkor", "Garrick", "Murnig", "Ningel", "Raulnor", "Scheppen", "Boltbuckle", "Clockwhirr", "Dabbledob", "Gimblegear", "Hammerpuff", "Puddlewhirl", "Sprocketspark", "Thimbleton", "Wobblecog"] },
 };
+
+// Extra names for each subrace, used alongside its race's names.
+const SUBRACE_NAME_PARTS = {
+  "High Elf": { first:["Aerendyl", "Elrith", "Galaeron", "Ilsevel", "Lymseia", "Maelthra", "Naeryndam", "Rhistel", "Saelethil", "Tellynnan", "Vaelyn", "Yathlanae", "Aubricus", "Erlan", "Ilyndrathyl", "Sylmae", "Taegen", "Ualair", "Ythilianna"],
+    last:["Alenuath", "Auvandell", "Calaudra", "Evanara", "Haelrin", "Ilbaereth", "Lightshiver", "Orlpar", "Selorn", "Starbrow", "Tellemar", "Ulondarr"] },
+  "Wood Elf": { first:["Alder", "Briar", "Cedra", "Fern", "Hawthorne", "Iriel", "Kestrel", "Larch", "Moss", "Nettle", "Rowanel", "Sorrel", "Teak", "Willow", "Yarrow", "Ashryn", "Elmwyn", "Faelwyn", "Lindir", "Thistle"],
+    last:["Barkskin", "Brackenshade", "Deeproot", "Fernwalker", "Greenleaf", "Hollowoak", "Mossbrook", "Pinecrest", "Thornbrake", "Treeshaper", "Wildthorn", "Wolfrunner"] },
+  "Dark Elf (Drow)": { only:true, first:["Ilphrin", "Jhaelryna", "Quarra", "Sabrae", "Zesstra", "Belaern", "Ilvaeryn", "Kalannar", "Malaggar", "Nyxtra", "Ulvirra", "Vorn", "Xullrae", "Chalithra", "Ilivarra", "Myrymma", "Szordrin", "Velkyn", "Ryshae", "Zilvrae", "Draeven", "Ophyra", "Tazrith", "Ylvane", "Alaundra", "Burzra", "Dirzaena", "Eclavdra", "Faerrel", "Ghalyss", "Hatrae", "Inidil", "Jerrevin", "Kaeltrin", "Lirdryn", "Mazryth", "Nendra", "Olorae", "Pellanyth", "Quilvrae", "Rilrae", "Sszarra", "Talvrinn", "Umrae", "Vlondril", "Xarann", "Yasraena", "Zeerith"],
+    last:["Auvrathen", "Bael'zith", "Dhurynn", "Elvrae", "Ilythrin", "Jhal'vrae", "Kyrnathar", "Mel'drith", "Nyzzurath", "Orlvenar", "Szaruun", "T'larrin", "Vel'thrinn", "Xaltyrr", "Zhaunviir", "Ul'vyrae", "Abaethal", "Barrison'vel", "Coloryn", "Duskryn", "Enzaerth", "Faen'tlab", "Gallaer", "Helviir", "Ithraen", "Lothryn", "Myrkyn", "Ssambra"] },
+  "Hill Dwarf": { first:["Amberlee", "Barmund", "Bryndis", "Dallin", "Eira", "Gerda", "Hamund", "Kenna", "Lurin", "Merrin", "Ronda", "Sigrun", "Tavin", "Wenna"],
+    last:["Ambervale", "Barrowdown", "Brewmantle", "Goldgrass", "Hearthstone", "Hillsmasher", "Honeymead", "Kegsplitter", "Meadowmere", "Ploughshare", "Stoutbelly", "Tallowmere"] },
+  "Mountain Dwarf": { first:["Bardin", "Durnhild", "Garnar", "Hjalmar", "Ingvild", "Kragmar", "Oldrik", "Runa", "Snorri", "Tharra", "Ulrika", "Vigdis", "Yngvar", "Brynhild"],
+    last:["Cragborn", "Frostbeard", "Glacierhold", "Highpeak", "Icebrow", "Ironpeak", "Peakwarden", "Ridgehammer", "Snowmantle", "Stormpeak", "Summitguard", "Valecutter"] },
+  "Lightfoot Halfling": { first:["Dash", "Feather", "Flick", "Jinx", "Lark", "Nimble", "Pim", "Skip", "Tilly", "Wisp", "Zephyr", "Ruby", "Kit", "Sparrow"],
+    last:["Fleetfoot", "Lightstep", "Longroad", "Quickfoot", "Rovingheart", "Swiftbrook", "Thistledew", "Wanderwell", "Wayfarer", "Windmeadow"] },
+  "Stout Halfling": { first:["Bosco", "Brandy", "Dunstan", "Ferdinand", "Gertie", "Humphrey", "Mabel", "Ned", "Olo", "Prudence", "Rufus", "Stout", "Tilda", "Wilbur"],
+    last:["Barleycorn", "Bigbarrel", "Brownlock", "Cheesewheel", "Hearthfire", "Ironbelly", "Oatcake", "Plumpudding", "Sturdybrook", "Thickbottom"] },
+  "Forest Gnome": { first:["Acorn", "Bramble", "Burdock", "Dapple", "Filbert", "Hazel", "Juniper", "Moss", "Nettlewick", "Pinecone", "Primrose", "Sprig", "Thimble", "Toadstool"],
+    last:["Barkwhistle", "Dewcap", "Glimmerglade", "Hollowstump", "Leafwhisk", "Mossmantle", "Mushroomhat", "Rootwhistle", "Shadegrove", "Thicketwhisk"] },
+  "Rock Gnome": { first:["Axle", "Bolt", "Cinder", "Dynamo", "Flint", "Gizmo", "Ratchet", "Rivet", "Spark", "Sprocket", "Tink", "Widget", "Zigzag", "Fuse"],
+    last:["Boilerbang", "Coppercoil", "Crankshaft", "Fizzlegear", "Flywheel", "Gadgetwhirr", "Pistonpop", "Springsnap", "Steamwhistle", "Tinderbox"] },
+};
+
+// Some tieflings take a single "virtue name" instead of their own.
+const TIEFLING_VIRTUE_NAMES = ["Art", "Carrion", "Chant", "Creed", "Despair", "Excellence", "Fear", "Glory", "Hope", "Ideal", "Music", "Nowhere", "Open", "Poetry", "Quest", "Random", "Reverence", "Sorrow", "Temerity", "Torment", "Weary", "Reverie", "Solace", "Vigil", "Wander", "Ember", "Mercy", "Riddle"];
 
 const ALIGNMENTS = ['Lawful Good','Neutral Good','Chaotic Good','Lawful Neutral','True Neutral','Chaotic Neutral','Lawful Evil','Neutral Evil','Chaotic Evil'];
 
@@ -5661,6 +5695,26 @@ function buildSpellBlockForClass(cls, classLevel, scores, prof){
   };
 }
 
+// A name to suit the race and subrace. Half-elves are often raised among
+// humans or elves and take their names; some half-orcs have human first names;
+// some tieflings go by a single virtue name.
+function characterName(race){
+  const group = race.nameGroup || race.name;
+  const sub = SUBRACE_NAME_PARTS[race.name];
+  const r = Math.random();
+  if(group === 'Tiefling' && r < 0.25) return drawFromBag('name-virtue', TIEFLING_VIRTUE_NAMES);
+  let firstGroup = group, lastGroup = group;
+  if(group === 'Half-Elf' && r < 0.25) firstGroup = lastGroup = 'Human';
+  else if(group === 'Half-Elf' && r < 0.5) firstGroup = lastGroup = 'Elf';
+  if(group === 'Half-Orc' && r < 0.25) firstGroup = 'Human';
+  // Subrace names make up a good share (drow use only their own); the rest
+  // come from the race's shared names.
+  const draw = (kind, from) => (sub && from === group && (sub.only || Math.random() < 0.4))
+    ? drawFromBag('name-'+kind+':'+race.name, sub[kind])
+    : drawFromBag('name-'+kind+':'+from, NAME_PARTS[from][kind]);
+  return draw('first', firstGroup) + ' ' + draw('last', lastGroup);
+}
+
 async function generateCharacter(level, locks, multiclassCls){
   locks = locks || {};
   const race = locks.race || drawFromBag('race', RACES);
@@ -5753,8 +5807,7 @@ async function generateCharacter(level, locks, multiclassCls){
   }
   const uniqueSkills = Array.from(new Set(skills));
 
-  const nameSet = NAME_PARTS[race.nameGroup || race.name];
-  const name = drawFromBag('name-first:'+race.name, nameSet.first) + ' ' + drawFromBag('name-last:'+race.name, nameSet.last);
+  const name = characterName(race);
 
   // Spellcasting: each class's spells are worked out at its own class level
   // (PHB multiclass rules: you learn and prepare spells for each class as if
