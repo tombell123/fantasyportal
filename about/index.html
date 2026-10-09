@@ -2446,6 +2446,25 @@
     transition: transform 0.15s ease;
   }
   .dice-result.rolling{ animation: dice-tumble 0.4s ease-out; }
+  .die-btn.die-btn-wide{ grid-column: 1 / -1; }
+  .dice-result.awaiting{ opacity: 0.45; }
+  /* 3D dice thrown across the screen (dice3d.js). Sits just under the dice
+     widget so the panel stays readable; tapping it skips to the result. */
+  .dice3d-stage{ position: fixed; inset: 0; z-index: 89; cursor: pointer; }
+  .dice3d-canvas{ position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .dice3d-flash{ position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+
+  /* Character sheet: unrolls like a scroll the first time it appears, then
+     later rolls just re-ink the open sheet. */
+  #sheetContainer{ position: relative; }
+  /* The character sheet has its own unroll / re-ink animation (app.js). */
+  #sheetContainer .sheet{ animation: none; }
+  .scroll-roller{ position: absolute; height: 20px; border-radius: 10px; z-index: 3; pointer-events: none;
+    background: linear-gradient(to bottom, #a98b5b 0%, #f2e6c8 32%, #e3d1a8 55%, #9c7f52 100%);
+    box-shadow: 0 3px 6px rgba(0,0,0,.35); }
+  .scroll-roller::before, .scroll-roller::after{ content: ""; position: absolute; top: -3px; width: 16px; height: 26px; border-radius: 6px;
+    background: linear-gradient(to bottom, #5a3c1c, #8a6233 45%, #3e2914); }
+  .scroll-roller::before{ left: -10px; } .scroll-roller::after{ right: -10px; }
   @keyframes dice-tumble{
     0%{ transform: scale(0.6) rotate(-15deg); opacity:0.4; }
     60%{ transform: scale(1.15) rotate(8deg); }
@@ -3335,6 +3354,7 @@
       <button type="button" class="die-btn" data-die="10">d10</button>
       <button type="button" class="die-btn" data-die="12">d12</button>
       <button type="button" class="die-btn" data-die="20">d20</button>
+      <button type="button" class="die-btn die-btn-wide" data-die="100">d100</button>
     </div>
     <div class="dice-result" id="diceResult">—</div>
     <div class="dice-log" id="diceLog"></div>

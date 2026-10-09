@@ -9267,6 +9267,7 @@ function equipmentSection(gear){
 }
 
 function renderSheet(c){
+  characterSheetShown = true;
   const el = document.getElementById('sheetContainer');
   const mc = c.multiclass;
   refreshDerivedStats(c);
@@ -9608,6 +9609,70 @@ historyList.addEventListener('click', (e) => {
   renderHistory();
 });
 
+/* ---------- Sheet animation ---------- */
+// The first character sheet unrolls like a scroll; after that a new roll
+// re-inks the open sheet instead of rolling it up and down again.
+let characterSheetShown = false;
+let sheetAnimations = [];
+function finishSheetAnimations(){ sheetAnimations.forEach(a => { try{ a.finish(); }catch(e){} }); sheetAnimations = []; }
+function animateCharacterSheet(first){
+  characterSheetShown = true;
+  const box = document.getElementById('sheetContainer');
+  const sheet = box.querySelector('.sheet');
+  if(!sheet || prefersReducedMotion() || !sheet.animate) return;
+  finishSheetAnimations();
+  box.querySelectorAll('.scroll-roller').forEach(r => r.remove());
+  const parts = Array.from(sheet.children);
+  if(!first){
+    parts.slice(0, 14).forEach((el, i) => {
+      sheetAnimations.push(el.animate(
+        [{ opacity: 0, filter: 'blur(3px)' }, { opacity: 1, filter: 'blur(0)' }],
+        { duration: 380, delay: i * 28, easing: 'ease-out', fill: 'backwards' }));
+    });
+    return;
+  }
+  const h = sheet.offsetHeight, top = sheet.offsetTop, left = sheet.offsetLeft, w = sheet.offsetWidth;
+  // Character sheets are long. Unroll the part on screen at a steady pace,
+  // then let the rest (below the fold) finish quickly.
+  const onScreen = Math.max(200, window.innerHeight - sheet.getBoundingClientRect().top);
+  const v = Math.min(1, onScreen / h);
+  const dur = v >= 1 ? 1000 : 1400, split = v >= 1 ? 1 : 0.8;
+  const clipFrames = v >= 1
+    ? [{ clipPath: 'inset(0 0 100% 0)', easing: 'cubic-bezier(.3,.1,.3,1)' }, { clipPath: 'inset(0 0 0% 0)' }]
+    : [{ clipPath: 'inset(0 0 100% 0)', easing: 'cubic-bezier(.35,.15,.45,1)' }, { clipPath: 'inset(0 0 ' + ((1 - v) * 100) + '% 0)', offset: split, easing: 'ease-in' }, { clipPath: 'inset(0 0 0% 0)' }];
+  const rollFrames = v >= 1
+    ? [{ transform: 'translateY(0)', easing: 'cubic-bezier(.3,.1,.3,1)' }, { transform: 'translateY(' + h + 'px)' }]
+    : [{ transform: 'translateY(0)', easing: 'cubic-bezier(.35,.15,.45,1)' }, { transform: 'translateY(' + (h * v) + 'px)', offset: split, easing: 'ease-in' }, { transform: 'translateY(' + h + 'px)' }];
+  // Fraction of the animation's time at which the roller reaches a point t (0-1) down the sheet.
+  const timeAt = t => v >= 1 ? Math.pow(t, 0.75) * 0.85 : (t <= v ? Math.pow(t / v, 0.75) * split : split + (t - v) / (1 - v) * (1 - split));
+  const makeRoller = y => {
+    const r = document.createElement('div');
+    r.className = 'scroll-roller';
+    r.style.left = (left - 6) + 'px'; r.style.width = (w + 12) + 'px'; r.style.top = (y - 10) + 'px';
+    box.appendChild(r);
+    return r;
+  };
+  const topRoller = makeRoller(top), bottomRoller = makeRoller(top);
+  sheetAnimations.push(sheet.animate(clipFrames, { duration: dur }));
+  const roll = bottomRoller.animate(rollFrames, { duration: dur, fill: 'forwards' });
+  sheetAnimations.push(roll);
+  // Each section fades in as the roller reaches it.
+  parts.forEach(el => {
+    const t = el.offsetTop / h;
+    sheetAnimations.push(el.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 320, delay: dur * Math.min(0.92, timeAt(Math.min(1, t))), easing: 'ease-out', fill: 'backwards' }));
+  });
+  const toolbar = box.querySelector('.sheet-toolbar');
+  if(toolbar) sheetAnimations.push(toolbar.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: dur * 0.6, fill: 'backwards' }));
+  roll.finished.then(() => {
+    [topRoller, bottomRoller].forEach(r => {
+      const a = r.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, delay: 250, fill: 'forwards' });
+      a.onfinish = () => r.remove();
+    });
+  }).catch(() => {});
+}
+document.getElementById('sheetContainer').addEventListener('click', finishSheetAnimations);
+
 /* ---------- Roll ---------- */
 
 rollBtn.addEventListener('click', async () => {
@@ -9637,7 +9702,9 @@ rollBtn.addEventListener('click', async () => {
     character.__historyId = Date.now() + '-' + Math.random().toString(36).slice(2,7);
     currentCharacter = character;
     currentCharacterRollId = null; // a freshly rolled character isn't saved anywhere yet
+    const firstSheet = !characterSheetShown;
     renderSheet(character);
+    animateCharacterSheet(firstSheet);
     sealLabel.textContent = 'Strike again';
 
     rollHistory.unshift(character);
@@ -12575,6 +12642,8 @@ function setDicePanelOpen(open){
   if(open){
     diceFab.classList.remove('pulse');
     positionDicePanel();
+    // Fetch the 3D dice in the background while they pick a die.
+    if(!prefersReducedMotion()) loadDice3D().catch(() => {});
   }
   dicePanel.hidden = !open;
   diceFab.setAttribute('aria-expanded', String(open));
@@ -12656,22 +12725,70 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape' && !dicePanel.hidden) setDicePanelOpen(false);
 });
 
-dicePanel.addEventListener('click', (e) => {
-  const btn = e.target.closest('.die-btn');
-  if(!btn) return;
-  const sides = parseInt(btn.getAttribute('data-die'), 10);
-  const result = roll(sides) + 1;
+// 3D dice (dice3d.js + three.js + cannon.js) load the first time the roller
+// opens. Without them (reduced motion, no WebGL, failed load) the roll just
+// shows its number in the panel, as before.
+let dice3dPromise = null;
+function prefersReducedMotion(){
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+function loadDice3D(){
+  if(dice3dPromise) return dice3dPromise;
+  const load = src => new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  dice3dPromise = load('/vendor/three-r128.min.js')
+    .then(() => load('/vendor/cannon-0.6.2.min.js'))
+    .then(() => load('/dice3d.js'))
+    .then(() => { if(!window.FPDice3D) throw new Error('3D dice unavailable'); });
+  dice3dPromise.catch(() => { dice3dPromise = null; });
+  return dice3dPromise;
+}
 
+function showDiceResult(sides, result){
+  diceResult.classList.remove('awaiting', 'rolling', 'crit-high', 'crit-low');
   diceResult.textContent = result;
-  diceResult.classList.remove('rolling', 'crit-high', 'crit-low');
   void diceResult.offsetWidth;
   diceResult.classList.add('rolling');
   if(sides === 20 && result === 20) diceResult.classList.add('crit-high');
   if(sides === 20 && result === 1) diceResult.classList.add('crit-low');
-
   diceLogEntries.unshift('d'+sides+': '+result);
   if(diceLogEntries.length > 5) diceLogEntries.length = 5;
   diceLog.textContent = diceLogEntries.join('   \u00b7   ');
+}
+
+// The 3D dice that show a roll. A d100 is a tens die (00-90) plus a d10;
+// 00 + 0 means 100.
+function diceForRoll(sides, result){
+  if(sides === 100){
+    const r = result % 100;
+    return [{ type:'d100', label:String(Math.floor(r/10)*10).padStart(2,'0') }, { type:'d10', label:String(r % 10) }];
+  }
+  return [{ type:'d'+sides, label: sides === 10 ? String(result % 10) : String(result) }];
+}
+
+let diceRollSeq = 0;
+dicePanel.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.die-btn');
+  if(!btn) return;
+  const sides = parseInt(btn.getAttribute('data-die'), 10);
+  const result = roll(sides) + 1;
+  const seq = ++diceRollSeq;
+
+  if(!prefersReducedMotion()){
+    diceResult.classList.add('awaiting');
+    try{
+      await loadDice3D();
+      if(seq !== diceRollSeq) return; // they've already rolled again
+      await window.FPDice3D.throwDice(diceForRoll(sides, result));
+      if(seq !== diceRollSeq) return;
+      if(sides === 20 && (result === 20 || result === 1)) window.FPDice3D.flash(result === 20 ? 'high' : 'low');
+    }catch(err){ /* fall back to the plain number */ }
+    if(seq !== diceRollSeq) return;
+  }
+  showDiceResult(sides, result);
 });
 
 /* ================= SPELLBOOK ================= */
